@@ -2,7 +2,7 @@ package ru.sfedu.services;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.sfedu.api.DataProviderCsv;
+import ru.sfedu.api.IDataProvider;
 import ru.sfedu.model.*;
 import ru.sfedu.utils.Constants;
 
@@ -15,10 +15,10 @@ public class RegistrationService implements IRegistrationService {
 
     private final Logger log = LogManager.getLogger(RegistrationService.class.getName());
 
-    private final DataProviderCsv dataProviderCsv;
+    private final IDataProvider dataProvider;
 
-    public RegistrationService() {
-        this.dataProviderCsv = new DataProviderCsv();
+    public RegistrationService(IDataProvider dataProvider) {
+        this.dataProvider = dataProvider;
     }
 
     @Override
@@ -41,11 +41,11 @@ public class RegistrationService implements IRegistrationService {
         log.info("objectRegistration [1]: object {}", subject);
 
         Result<TreeMap<String, String>> validationResult = objectValidation(subject);
-        Result<Subject> saveResult = new Result<>(null,Constants.CODE_ERROR,subject);
+        Result<Subject> saveResult = new Result<>(null, Constants.CODE_ERROR, subject);
 
         if (validationResult.getCode() == Constants.CODE_ACCESS) {
             if (validationResult.getResult().isEmpty()) {
-                saveResult = dataProviderCsv.saveOrUpdateSubject(subject);
+                saveResult = dataProvider.saveOrUpdateSubject(subject);
             }
         }
 
@@ -54,7 +54,7 @@ public class RegistrationService implements IRegistrationService {
 
     @Override
     public void barrierRegistration(Integer barrierFloor) {
-        dataProviderCsv.barrierRegistration(barrierFloor);
+        dataProvider.barrierRegistration(barrierFloor);
     }
 
     private Result<TreeMap<String, String>> transportValidation(Transport transport) {
@@ -70,7 +70,7 @@ public class RegistrationService implements IRegistrationService {
             errors.put(Constants.KEY_NUMBER, Constants.NOT_VALID_NUMBER);
         }
 
-        if (!errors.isEmpty()){
+        if (!errors.isEmpty()) {
             result.setCode(Constants.CODE_INVALID_DATA);
         }
 
@@ -107,7 +107,7 @@ public class RegistrationService implements IRegistrationService {
             errors.put(Constants.KEY_EMAIL, Constants.NOT_VALID_EMAIL);
         }
 
-        if (!errors.isEmpty()){
+        if (!errors.isEmpty()) {
             result.setCode(Constants.CODE_INVALID_DATA);
         }
 
@@ -128,7 +128,7 @@ public class RegistrationService implements IRegistrationService {
             errors.put(Constants.KEY_NICKNAME, Constants.NOT_VALID_NICKNAME);
         }
 
-        if (!errors.isEmpty()){
+        if (!errors.isEmpty()) {
             result.setCode(Constants.CODE_INVALID_DATA);
         }
 
@@ -137,7 +137,7 @@ public class RegistrationService implements IRegistrationService {
     }
 
     private boolean checkByPattern(String string, String pattern) {
-        if (string == null){
+        if (string == null) {
             return false;
         }
         Pattern pattern2 = Pattern.compile(pattern);

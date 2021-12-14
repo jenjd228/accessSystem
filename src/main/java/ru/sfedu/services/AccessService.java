@@ -1,31 +1,32 @@
 package ru.sfedu.services;
 
 import ru.sfedu.api.DataProviderCsv;
+import ru.sfedu.api.IDataProvider;
 import ru.sfedu.model.MoveType;
 
 import java.util.Calendar;
 
 public class AccessService implements IAccessService {
 
-    private final DataProviderCsv dataProviderCsv;
+    private final IDataProvider dataProvider;
 
-    public AccessService() {
-        dataProviderCsv = new DataProviderCsv();
+    public AccessService(IDataProvider dataProvider) {
+        this.dataProvider = dataProvider;
     }
 
     @Override
     public boolean checkPermission(Integer subjectId, Integer barrierId) {
-        return dataProviderCsv.isSubjectHasAccess(subjectId, barrierId);
+        return dataProvider.isSubjectHasAccess(subjectId, barrierId);
     }
 
     @Override
     public void openOrCloseBarrier(Integer barrierId, boolean flag) {
-        dataProviderCsv.openOrCloseBarrier(barrierId, flag);
+        dataProvider.openOrCloseBarrier(barrierId, flag);
     }
 
     @Override
     public void motionRegistration(Integer subjectId, Integer barrierId, MoveType moveType) {
-        dataProviderCsv.saveMotion(subjectId, barrierId, moveType);
+        dataProvider.saveMotion(subjectId, barrierId, moveType);
     }
 
     @Override
@@ -35,6 +36,6 @@ public class AccessService implements IAccessService {
         calendar.set(Calendar.MONTH, month);
         calendar.set(Calendar.DAY_OF_MONTH, day);
         calendar.set(Calendar.HOUR_OF_DAY, hours);
-        dataProviderCsv.grantAccess(subjectId, barrierId, calendar.getTimeInMillis() / 1000);
+        dataProvider.grantAccess(subjectId, barrierId, calendar.getTimeInMillis() / 1000);
     }
 }

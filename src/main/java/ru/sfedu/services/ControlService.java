@@ -1,5 +1,6 @@
 package ru.sfedu.services;
 
+import ru.sfedu.api.IDataProvider;
 import ru.sfedu.model.MoveType;
 import ru.sfedu.model.Result;
 import ru.sfedu.model.Subject;
@@ -10,17 +11,17 @@ import java.util.TreeMap;
 
 public class ControlService implements IControlService {
 
-    private final RegistrationService registrationServiceCsv;
+    private final RegistrationService registrationService;
     private final AccessService accessService;
 
-    public ControlService() {
-        this.registrationServiceCsv = new RegistrationService();
-        this.accessService = new AccessService();
+    public ControlService(IDataProvider dataProvider) {
+        this.registrationService = new RegistrationService(dataProvider);
+        this.accessService = new AccessService(dataProvider);
     }
 
     @Override
     public Result<AbstractMap.SimpleEntry<Subject, TreeMap<String, String>>> objectRegistration(Subject subject) {
-        Result<AbstractMap.SimpleEntry<Subject, TreeMap<String, String>>> result = registrationServiceCsv.objectRegistration(subject);
+        Result<AbstractMap.SimpleEntry<Subject, TreeMap<String, String>>> result = registrationService.objectRegistration(subject);
 
         if (result.getCode() == Constants.CODE_ACCESS) {
             if (result.getResult().getValue().size() == 0) {
@@ -47,7 +48,7 @@ public class ControlService implements IControlService {
 
     @Override
     public void barrierRegistration(Integer barrierFloor) {
-        registrationServiceCsv.barrierRegistration(barrierFloor);
+        registrationService.barrierRegistration(barrierFloor);
     }
 
     @Override
