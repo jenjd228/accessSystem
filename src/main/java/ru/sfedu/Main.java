@@ -1,21 +1,16 @@
 package ru.sfedu;
 
-import com.opencsv.exceptions.CsvDataTypeMismatchException;
-import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.sfedu.model.*;
+import ru.sfedu.api.DataProviderCsv;
+import ru.sfedu.api.DataProviderXml;
+import ru.sfedu.model.Animal;
+import ru.sfedu.model.Human;
+import ru.sfedu.model.SubjectType;
+import ru.sfedu.model.Transport;
 import ru.sfedu.services.ControlService;
-import ru.sfedu.utils.Constants;
-import ru.sfedu.utils.CsvUtil;
-import ru.sfedu.utils.SubjectUtil;
 
-import java.io.IOException;
-import java.time.*;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Random;
 
 public class Main {
 
@@ -28,9 +23,10 @@ public class Main {
         animal.setNickName("Dog");
 
         Transport transport = new Transport();
+        transport.setId(2);
         transport.setType(SubjectType.TRANSPORT);
-        transport.setColor("Red");
-        transport.setNumber("eqwe212");
+        transport.setColor("Black");
+        transport.setNumber("number");
 
         Human human = new Human();
         ArrayList<Integer> list = new ArrayList();
@@ -38,7 +34,7 @@ public class Main {
         list.add(2);
         list.add(3);
         human.setType(SubjectType.USER);
-        human.setId(2);
+        //human.setId(2);
         human.setEmail("ekocaba2@mail.ru");
         human.setLogin("jenjd2");
         human.setPassword("15032002K");
@@ -46,9 +42,9 @@ public class Main {
         human.setSurname("MaxSurname");
         human.setPatronymic("MaxPatronymic");
 
-        ControlService controlService = new ControlService();
-        //log.info(controlService.objectRegistration(transport));
+        ControlService controlService = new ControlService(new DataProviderXml());
+        log.info(controlService.objectRegistration(transport));
 
-        controlService.gateAction(1,2,MoveType.OUT);
+        //controlService.gateAction(1,2,MoveType.OUT);
     }
 }

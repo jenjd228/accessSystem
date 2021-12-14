@@ -46,7 +46,7 @@ public class DataProviderCsv implements IDataProvider {
             createFileIfNotExists(historyFilePath);
             createFileIfNotExists(barriersFilePath);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Data providerCsv - initialization error");
         }
     }
 

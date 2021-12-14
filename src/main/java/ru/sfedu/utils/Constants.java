@@ -10,6 +10,9 @@ public class Constants {
     public static final String CSV_PATH_FOLDER = "csv/";
     public static final String CSV_FILE_TYPE = ".csv";
 
+    public static final String XML_FILE_TYPE = ".xml";
+    public static final String XML_PATH_FOLDER = "xml/";
+
     public static final String SUBJECT_FILENAME = "subjects";
     public static final String ACCESSIBLE_BARRIERS_FILENAME = "accessibleBarriers";
     public static final String MOTIONS_FILENAME = "motions";
