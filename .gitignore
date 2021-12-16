@@ -2,5 +2,7 @@
 /target/
 logs/
 csv/
+testFolder/
+xml/
 *.iml
 *.log

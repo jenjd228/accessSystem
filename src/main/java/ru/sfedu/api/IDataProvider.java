@@ -1,21 +1,15 @@
 package ru.sfedu.api;
 
-import ru.sfedu.model.*;
+import ru.sfedu.model.MoveType;
+import ru.sfedu.model.Result;
+import ru.sfedu.model.Subject;
 
 public interface IDataProvider {
-    Result<Subject> saveOrUpdateSubject(Subject subject);
-
-    Result<Subject> getSubjectById(Integer id);
-
-    boolean isSubjectHasAccess(Integer subjectId, Integer barrierId);
-
-    void saveMotion(Integer subjectId, Integer barrierId, MoveType moveType);
-
-    Result<History> createAndSaveHistory(Integer subjectId);
+    Result<Object> saveOrUpdateSubject(Subject subject);
 
     boolean barrierRegistration(Integer barrierFloor);
 
-    boolean grantAccess(Integer subjectId,Integer barrierId,Long date);
+    Result<Object> grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours);
 
-    void openOrCloseBarrier(Integer barrierId, boolean flag);
+    boolean gateAction(Integer subjectId, Integer barrierId, MoveType moveType);
 }
