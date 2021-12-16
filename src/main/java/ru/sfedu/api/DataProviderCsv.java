@@ -12,7 +12,6 @@ import ru.sfedu.utils.Constants;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Calendar;
 
 import static ru.sfedu.utils.CsvUtil.getNewObjectId;
 import static ru.sfedu.utils.CsvUtil.write;
@@ -20,6 +19,7 @@ import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 import static ru.sfedu.utils.FileUtil.createFolderIfNotExists;
 import static ru.sfedu.utils.SubjectUtil.getAllObjectFields;
 import static ru.sfedu.utils.SubjectUtil.getAllSubjectFields;
+import static ru.sfedu.utils.TImeUtil.getCurrentUtcTimeInMillis;
 
 public class DataProviderCsv implements IDataProvider {
 
@@ -40,14 +40,34 @@ public class DataProviderCsv implements IDataProvider {
 
         try {
             createFolderIfNotExists(Constants.CSV_PATH_FOLDER);
-            createFileIfNotExists(subjectsFilePath);
-            createFileIfNotExists(accessBarriersFilePath);
-            createFileIfNotExists(motionsFilePath);
-            createFileIfNotExists(historyFilePath);
-            createFileIfNotExists(barriersFilePath);
+            createCommonFiles();
         } catch (IOException e) {
             log.error("Data providerCsv - initialization error");
         }
+    }
+
+    public DataProviderCsv(String path) {
+        String mainFolder = path.concat(Constants.CSV_PATH_FOLDER);
+        subjectsFilePath = mainFolder.concat(Constants.SUBJECT_FILENAME).concat(Constants.CSV_FILE_TYPE);
+        accessBarriersFilePath = mainFolder.concat(Constants.ACCESSIBLE_BARRIERS_FILENAME).concat(Constants.CSV_FILE_TYPE);
+        motionsFilePath = mainFolder.concat(Constants.MOTIONS_FILENAME).concat(Constants.CSV_FILE_TYPE);
+        historyFilePath = mainFolder.concat(Constants.HISTORY_FILENAME).concat(Constants.CSV_FILE_TYPE);
+        barriersFilePath = mainFolder.concat(Constants.BARRIERS_FILENAME).concat(Constants.CSV_FILE_TYPE);
+
+        try {
+            createFolderIfNotExists(mainFolder);
+            createCommonFiles();
+        } catch (IOException e) {
+            log.error("Data providerCsv - initialization error");
+        }
+    }
+
+    private void createCommonFiles() throws IOException {
+        createFileIfNotExists(subjectsFilePath);
+        createFileIfNotExists(accessBarriersFilePath);
+        createFileIfNotExists(motionsFilePath);
+        createFileIfNotExists(historyFilePath);
+        createFileIfNotExists(barriersFilePath);
     }
 
     @Override
@@ -158,8 +178,11 @@ public class DataProviderCsv implements IDataProvider {
 
             for (String[] nextLine : reader) {
                 String[] strings = nextLine[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
-                if (strings[1].equals(String.valueOf(subjectId)) && strings[2].equals(String.valueOf(barrierId))) {
-                    log.info("isSubjectHasAccess [2] subject has an access");
+                Long currentTime = getCurrentUtcTimeInMillis();
+                log.info("isSubjectHasAccess [2]: currentTime = {}, date = {}", currentTime, strings[3]);
+                if (strings[1].equals(String.valueOf(subjectId)) && strings[2].equals(String.valueOf(barrierId))
+                        && Long.parseLong(strings[3]) > currentTime) {
+                    log.info("isSubjectHasAccess [3]: subject has an access");
                     isHasAccess = true;
                     break;
                 }
@@ -168,10 +191,10 @@ public class DataProviderCsv implements IDataProvider {
             fileReader.close();
             reader.close();
         } catch (Exception e) {
-            log.error("isSubjectHasAccess [3]: {}", e.getMessage());
+            log.error("isSubjectHasAccess [4]: {}", e.getMessage());
         }
         if (!isHasAccess) {
-            log.info("isSubjectHasAccess [4] subject has no an access or there is no such a barrier");
+            log.info("isSubjectHasAccess [5] subject has no an access or there is no such a barrier");
         }
         return isHasAccess;
     }
@@ -263,7 +286,7 @@ public class DataProviderCsv implements IDataProvider {
         }
     }
 
-    public void updateBarrierStatus(Integer barrierId, boolean flag) throws IOException, CsvValidationException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException {
+    private void updateBarrierStatus(Integer barrierId, boolean flag) throws IOException, CsvValidationException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException {
         log.info("updateBarrierStatus [1] : {}, isOpen = {}", barrierId, flag);
         String newFilePath = barriersFilePath.substring(0, barriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         File oldFile = new File(barriersFilePath);
@@ -309,7 +332,7 @@ public class DataProviderCsv implements IDataProvider {
             FileReader fileReader = new FileReader(historyFilePath);
             CSVReader reader = new CSVReader(fileReader);
 
-            String currentUtcTime = getCurrentUtcTimeInSeconds().toString();
+            String currentUtcTime = getCurrentUtcTimeInMillis().toString();
 
             for (String[] nextLine : reader) {
                 String[] strings = nextLine[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
@@ -336,14 +359,6 @@ public class DataProviderCsv implements IDataProvider {
         return result;
     }
 
-    private Long getCurrentUtcTimeInSeconds() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        return calendar.getTimeInMillis() / 1000;
-    }
-
     private Subject createSubject(String[] strings) {
         SubjectType subjectType = SubjectType.valueOf(strings[1]);
         Subject result = null;
@@ -360,7 +375,7 @@ public class DataProviderCsv implements IDataProvider {
 
     private History createHistory(Integer subjectId, Integer historyId) {
         History history = new History();
-        history.setDate(getCurrentUtcTimeInSeconds());
+        history.setDate(getCurrentUtcTimeInMillis());
         history.setSubjectId(subjectId);
         history.setId(historyId);
         return history;

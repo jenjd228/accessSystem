@@ -9,5 +9,5 @@ public interface IAccessService {
 
     void motionRegistration(Integer subjectId, Integer barrierId, MoveType moveType);
 
-    void grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours);
+    void grantAccess(Integer subjectId, Integer barrierId, Long date);
 }

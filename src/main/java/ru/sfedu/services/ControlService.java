@@ -9,6 +9,8 @@ import ru.sfedu.utils.Constants;
 import java.util.AbstractMap;
 import java.util.TreeMap;
 
+import static ru.sfedu.utils.TImeUtil.getUtcTimeInMillis;
+
 public class ControlService implements IControlService {
 
     private final RegistrationService registrationService;
@@ -53,6 +55,6 @@ public class ControlService implements IControlService {
 
     @Override
     public void grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours) {
-        accessService.grantAccess(subjectId, barrierId, year, month, day, hours);
+        accessService.grantAccess(subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
     }
 }

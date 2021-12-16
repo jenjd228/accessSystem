@@ -2,13 +2,10 @@ package ru.sfedu;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.sfedu.api.DataProviderCsv;
-import ru.sfedu.api.DataProviderXml;
 import ru.sfedu.model.Animal;
 import ru.sfedu.model.Human;
 import ru.sfedu.model.SubjectType;
 import ru.sfedu.model.Transport;
-import ru.sfedu.services.ControlService;
 
 import java.util.ArrayList;
 
@@ -41,10 +38,8 @@ public class Main {
         human.setName("Maxx");
         human.setSurname("MaxSurname");
         human.setPatronymic("MaxPatronymic");
-
-        ControlService controlService = new ControlService(new DataProviderXml());
-        log.info(controlService.objectRegistration(transport));
-
+        //ControlService controlService = new ControlService(new DataProviderCsv());
+        //log.info(controlService.objectRegistration(transport));
         //controlService.gateAction(1,2,MoveType.OUT);
     }
 }
