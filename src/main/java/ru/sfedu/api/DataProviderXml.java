@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import ru.sfedu.model.*;
-import ru.sfedu.utils.Constants;
+import ru.sfedu.Constants;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,9 +45,9 @@ public class DataProviderXml implements IDataProvider {
     }
 
     @Override
-    public Result<Subject> saveOrUpdateSubject(Subject subject) {
+    public Result<Object> saveOrUpdateSubject(Subject subject) {
         log.info("saveOrUpdateSubject [1]: {}", subject);
-        Result<Subject> result;
+        Result<Object> result;
         try {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
@@ -65,7 +65,25 @@ public class DataProviderXml implements IDataProvider {
     }
 
     @Override
-    public Result<Subject> getSubjectById(Integer id) {
+    public boolean barrierRegistration(Integer barrierFloor) {
+        return false;
+    }
+
+    @Override
+    public Result<Object> grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours) {
+        return new Result<>();
+    }
+
+    @Override
+    public boolean gateAction(Integer subjectId, Integer barrierId, MoveType moveType) {
+        return false;
+    }
+
+    private void openOrCloseBarrier(Integer barrierId, boolean flag) {
+
+    }
+
+    private Result<Subject> getSubjectById(Integer id) {
         log.info("getSubjectById [1] : id = {}", id);
         Result<Subject> result = new Result<>();
         result.setCode(Constants.CODE_NOT_FOUND);
@@ -92,7 +110,7 @@ public class DataProviderXml implements IDataProvider {
         return result;
     }
 
-    private Result<Subject> writeNewSubject(Subject subject) {
+    private Result<Object> writeNewSubject(Subject subject) {
         log.info("writeNewSubject [1] : New subject is creating");
 
         Serializer serializer = new Persister();
@@ -121,7 +139,7 @@ public class DataProviderXml implements IDataProvider {
         return new Result<>(null, Constants.CODE_ACCESS, subject);
     }
 
-    private Result<Subject> saveModifySubject(Subject subject) {
+    private Result<Object> saveModifySubject(Subject subject) {
         log.info("saveModifyUser [1] : {}", subject);
         File file = new File(subjectsFilePath);
 
@@ -160,33 +178,11 @@ public class DataProviderXml implements IDataProvider {
         return ((Subject) list.get(list.size() - 1)).getId() + 1;
     }
 
-    @Override
-    public boolean isSubjectHasAccess(Integer subjectId, Integer barrierId) {
+    public boolean checkPermission(Integer subjectId, Integer barrierId) {
         return false;
     }
 
-    @Override
-    public void saveMotion(Integer subjectId, Integer barrierId, MoveType moveType) {
-
-    }
-
-    @Override
-    public Result<History> createAndSaveHistory(Integer subjectId) {
-        return null;
-    }
-
-    @Override
-    public boolean barrierRegistration(Integer barrierFloor) {
-        return false;
-    }
-
-    @Override
-    public boolean grantAccess(Integer subjectId, Integer barrierId, Long date) {
-        return false;
-    }
-
-    @Override
-    public void openOrCloseBarrier(Integer barrierId, boolean flag) {
+    private void motionRegistration(Integer subjectId, Integer barrierId, MoveType moveType) {
 
     }
 }

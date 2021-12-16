@@ -3,12 +3,15 @@ package ru.sfedu.api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.*;
+import ru.sfedu.Constants;
 import ru.sfedu.model.Animal;
+import ru.sfedu.model.MoveType;
 import ru.sfedu.model.Result;
 import ru.sfedu.model.Subject;
-import ru.sfedu.utils.Constants;
 
 import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.TreeMap;
 
 import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 import static ru.sfedu.utils.FileUtil.deleteFileOrFolderIfExists;
@@ -44,6 +47,8 @@ class DataProviderCsvTest extends BaseTest {
         deleteFileOrFolderIfExists(subjectsFilePath);
         deleteFileOrFolderIfExists(accessBarriersFilePath);
         deleteFileOrFolderIfExists(barriersFilePath);
+        deleteFileOrFolderIfExists(motionsFilePath);
+        deleteFileOrFolderIfExists(historyFilePath);
     }
 
     @Test
@@ -51,8 +56,26 @@ class DataProviderCsvTest extends BaseTest {
         log.info("saveOrUpdateSubjectIfNotExists [1]: - test started");
         Animal actualAnimal = createAnimal(null, "Red", "animal");
         Animal expectedAnimal = createAnimal(1, "Red", "animal");
-        Result<Subject> actual = actualDataProviderCsv.saveOrUpdateSubject(actualAnimal);
+        Result<Object> actual = actualDataProviderCsv.saveOrUpdateSubject(actualAnimal);
         Result<Subject> expected = new Result<>(null, Constants.CODE_ACCESS, expectedAnimal);
+        log.info("saveOrUpdateSubjectIfNotExists [2]: actual data = {}", actual);
+        log.info("saveOrUpdateSubjectIfNotExists [3]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("saveOrUpdateSubjectIfNotExists [4]: - test succeeded");
+    }
+
+    @Test
+    void saveOrUpdateSubjectIfNotValid() {
+        log.info("saveOrUpdateSubjectIfNotExists [1]: - test started");
+        Animal actualAnimal = createAnimal(null, "Red2", "animal123");
+        Animal expectedAnimal = createAnimal(null, "Red2", "animal123");
+        TreeMap<String, String> errors = new TreeMap<>();
+        errors.put(Constants.KEY_COLOR, Constants.NOT_VALID_COLOR);
+        errors.put(Constants.KEY_NICKNAME, Constants.NOT_VALID_NICKNAME);
+
+        Result<Object> actual = actualDataProviderCsv.saveOrUpdateSubject(actualAnimal);
+        Result<TreeMap<String, String>> expected = new Result(null, Constants.CODE_INVALID_DATA, new AbstractMap.SimpleEntry<>(expectedAnimal, errors));
         log.info("saveOrUpdateSubjectIfNotExists [2]: actual data = {}", actual);
         log.info("saveOrUpdateSubjectIfNotExists [3]: expected data = {}", expected);
 
@@ -68,7 +91,7 @@ class DataProviderCsvTest extends BaseTest {
 
         actualDataProviderCsv.saveOrUpdateSubject(animal);
 
-        Result<Subject> actual = actualDataProviderCsv.saveOrUpdateSubject(newAnimal);
+        Result<Object> actual = actualDataProviderCsv.saveOrUpdateSubject(newAnimal);
         Result<Subject> expected = new Result<>(null, Constants.CODE_ACCESS, newAnimal);
         log.info("saveOrUpdateSubjectIfExists [2]: actual data = {}", actual);
         log.info("saveOrUpdateSubjectIfExists [3]: expected data = {}", expected);
@@ -78,129 +101,175 @@ class DataProviderCsvTest extends BaseTest {
     }
 
     @Test
-    void getSubjectByIdIfExists() {
-        log.info("getSubjectByIdIfExists [1]: - test started");
-        Animal animal = createAnimal(null, "Red", "animal");
-
-        actualDataProviderCsv.saveOrUpdateSubject(animal);
-
-        Result<Subject> actual = actualDataProviderCsv.getSubjectById(1);
-        animal.setId(1);
-        Result<Subject> expected = new Result<>(null, Constants.CODE_ACCESS, animal);
-        log.info("getSubjectByIdIfExists [2]: actual data = {}", actual);
-        log.info("getSubjectByIdIfExists [3]: expected data = {}", expected);
-
-        Assertions.assertEquals(expected, actual);
-        log.info("getSubjectByIdIfExists [4]: - test succeeded");
-    }
-
-    @Test
-    void getSubjectByIdIfNotExists() {
-        log.info("getSubjectByIdIfNotExists [1]: - test started");
-        try {
-            createFileIfNotExists(subjectsFilePath);
-        } catch (IOException e) {
-            log.error("getSubjectByIdIfNotExists [2]: - error = {}", e.getMessage());
-        }
-
-        Result<Subject> actual = actualDataProviderCsv.getSubjectById(1);
-        Result<Subject> expected = new Result<>(null, Constants.CODE_NOT_FOUND, null);
-        log.info("getSubjectByIdIfNotExists [3]: actual data = {}", actual);
-        log.info("getSubjectByIdIfNotExists [4]: expected data = {}", expected);
-
-        Assertions.assertEquals(expected, actual);
-        log.info("getSubjectByIdIfNotExists [5]: - test succeeded");
-    }
-
-    @Test
-    void getSubjectByIdError() {
-        log.info("getSubjectByIdIfNotExists [1]: - test started");
-
-        Result<Subject> actual = actualDataProviderCsv.getSubjectById(1);
-        Result<Subject> expected = new Result<>(subjectsFilePath.concat(" (No such file or directory)"), Constants.CODE_ERROR, null);
-        log.info("getSubjectByIdIfNotExists [2]: actual data = {}", actual);
-        log.info("getSubjectByIdIfNotExists [3]: expected data = {}", expected);
-
-        Assertions.assertEquals(expected, actual);
-        log.info("getSubjectByIdIfNotExists [4]: - test succeeded");
-    }
-
-    @Test
-    void isSubjectHasAccessCorrectDate() {
-        log.info("isSubjectHasAccess [1]: - test started");
-
-        actualDataProviderCsv.grantAccess(1, 1, getUtcTimeInMillis(2024, 12, 16, 1));
-        boolean actual = actualDataProviderCsv.isSubjectHasAccess(1, 1);
-        boolean expected = true;
-        log.info("isSubjectHasAccess [2]: actual data = {}", actual);
-        log.info("isSubjectHasAccess [3]: expected data = {}", expected);
-
-        Assertions.assertEquals(expected, actual);
-        log.info("isSubjectHasAccess [4]: - test succeeded");
-    }
-
-    @Test
-    void isSubjectHasAccessNoAccessNoData() {
-        log.info("isSubjectHasAccess [1]: - test started");
-
-        try {
-            createFileIfNotExists(accessBarriersFilePath);
-        } catch (IOException e) {
-            log.error("");
-        }
-        boolean actual = actualDataProviderCsv.isSubjectHasAccess(1, 1);
-        boolean expected = false;
-        log.info("isSubjectHasAccess [2]: actual data = {}", actual);
-        log.info("isSubjectHasAccess [3]: expected data = {}", expected);
-
-        Assertions.assertEquals(expected, actual);
-        log.info("isSubjectHasAccess [4]: - test succeeded");
-    }
-
-    @Test
-    void isSubjectHasAccessNoAccessNoFile() {
-        log.info("isSubjectHasAccess [1]: - test started");
-
-        boolean actual = actualDataProviderCsv.isSubjectHasAccess(1, 1);
-        boolean expected = false;
-        log.info("isSubjectHasAccess [2]: actual data = {}", actual);
-        log.info("isSubjectHasAccess [3]: expected data = {}", expected);
-
-        Assertions.assertEquals(expected, actual);
-        log.info("isSubjectHasAccess [4]: - test succeeded");
-    }
-
-    @Test
-    void isSubjectHasAccessNoAccessWrongDate() {
-        log.info("isSubjectHasAccess [1]: - test started");
-
-        actualDataProviderCsv.grantAccess(1, 1, getUtcTimeInMillis(2021, 12, 15, 1));
-        boolean actual = actualDataProviderCsv.isSubjectHasAccess(1, 1);
-        boolean expected = false;
-        log.info("isSubjectHasAccess [2]: actual data = {}", actual);
-        log.info("isSubjectHasAccess [3]: expected data = {}", expected);
-
-        Assertions.assertEquals(expected, actual);
-        log.info("isSubjectHasAccess [4]: - test succeeded");
-    }
-
-    @Test
-    void saveMotion() {
-    }
-
-    @Test
-    void createAndSaveHistory() {
-    }
-
-    @Test
     void barrierRegistration() {
+        log.info("barrierRegistration [1]: - test started");
+
+        boolean actual = actualDataProviderCsv.barrierRegistration(1);
+        log.info("barrierRegistration [2]: actual data = {}", actual);
+        log.info("barrierRegistration [3]: expected data = {}", true);
+
+        Assertions.assertTrue(actual);
+        log.info("barrierRegistration [4]: - test succeeded");
     }
 
     @Test
-    void grantAccess() {
+    void gateActionIfHasAccess() {
+        log.info("barrierRegistration [1]: - test started");
+
+        try {
+            createFileIfNotExists(motionsFilePath);
+            createFileIfNotExists(historyFilePath);
+            createFileIfNotExists(barriersFilePath);
+        } catch (IOException e) {
+            log.error("gateActionIfHasAccess [2]: error = {}", e.getMessage());
+        }
+
+        actualDataProviderCsv.barrierRegistration(1);
+        actualDataProviderCsv.saveOrUpdateSubject(createAnimal(1,"Red","animal"));
+        actualDataProviderCsv.grantAccess(1,1,2025,1,1,1);
+        boolean actual = actualDataProviderCsv.gateAction(1, 1, MoveType.IN);
+        log.info("barrierRegistration [2]: actual data = {}", actual);
+        log.info("barrierRegistration [3]: expected data = {}", true);
+
+        Assertions.assertTrue(actual);
+        log.info("barrierRegistration [4]: - test succeeded");
     }
 
     @Test
-    void openOrCloseBarrier() {
+    void gateActionIfNoAccess() {
+        log.info("barrierRegistration [1]: - test started");
+
+        try {
+            createFileIfNotExists(motionsFilePath);
+            createFileIfNotExists(historyFilePath);
+            createFileIfNotExists(barriersFilePath);
+        } catch (IOException e) {
+            log.error("gateActionIfHasAccess [2]: error = {}", e.getMessage());
+        }
+
+        actualDataProviderCsv.barrierRegistration(1);
+        actualDataProviderCsv.grantAccess(1,1,2020,1,1,1);
+        boolean actual = actualDataProviderCsv.gateAction(1, 1, MoveType.IN);
+        log.info("barrierRegistration [2]: actual data = {}", actual);
+        log.info("barrierRegistration [3]: expected data = {}", false);
+
+        Assertions.assertFalse(actual);
+        log.info("barrierRegistration [4]: - test succeeded");
     }
+
+    @Test
+    void gateActionIfNoBarrier() {
+        log.info("barrierRegistration [1]: - test started");
+
+        try {
+            createFileIfNotExists(motionsFilePath);
+            createFileIfNotExists(historyFilePath);
+            createFileIfNotExists(barriersFilePath);
+        } catch (IOException e) {
+            log.error("gateActionIfHasAccess [2]: error = {}", e.getMessage());
+        }
+
+        boolean actual = actualDataProviderCsv.gateAction(1, 1, MoveType.IN);
+        log.info("barrierRegistration [2]: actual data = {}", actual);
+        log.info("barrierRegistration [3]: expected data = {}", false);
+
+        Assertions.assertFalse(actual);
+        log.info("barrierRegistration [4]: - test succeeded");
+    }
+
+    @Test
+    void grantAccessIfBarrierNotFound() {
+        log.info("barrierRegistration [1]: - test started");
+
+        try {
+            createFileIfNotExists(motionsFilePath);
+            createFileIfNotExists(historyFilePath);
+            createFileIfNotExists(barriersFilePath);
+        } catch (IOException e) {
+            log.error("gateActionIfHasAccess [2]: error = {}", e.getMessage());
+        }
+
+        actualDataProviderCsv.saveOrUpdateSubject(createAnimal(null,"Red","animal"));
+        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1,2025,1,1,1);
+        TreeMap<String,String> errors = new TreeMap<>();
+        errors.put(Constants.KEY_BARRIER,Constants.NOT_FOUND_BARRIER);
+        Result<Object> expected = new Result<>(null,Constants.CODE_INVALID_DATA,errors);
+        log.info("barrierRegistration [2]: actual data = {}", actual);
+        log.info("barrierRegistration [3]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected,actual);
+        log.info("barrierRegistration [4]: - test succeeded");
+    }
+
+    @Test
+    void grantAccessIfSubjectNotFound() {
+        log.info("barrierRegistration [1]: - test started");
+
+        try {
+            createFileIfNotExists(motionsFilePath);
+            createFileIfNotExists(historyFilePath);
+            createFileIfNotExists(barriersFilePath);
+        } catch (IOException e) {
+            log.error("gateActionIfHasAccess [2]: error = {}", e.getMessage());
+        }
+
+        actualDataProviderCsv.barrierRegistration(2);
+        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1,2025,1,1,1);
+        TreeMap<String,String> errors = new TreeMap<>();
+        errors.put(Constants.KEY_SUBJECT,Constants.NOT_FOUND_SUBJECT);
+        Result<Object> expected = new Result<>(null,Constants.CODE_INVALID_DATA,errors);
+        log.info("barrierRegistration [2]: actual data = {}", actual);
+        log.info("barrierRegistration [3]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected,actual);
+        log.info("barrierRegistration [4]: - test succeeded");
+    }
+
+    @Test
+    void grantAccessIfSubjectAndBarrierNotFound() {
+        log.info("barrierRegistration [1]: - test started");
+
+        try {
+            createFileIfNotExists(motionsFilePath);
+            createFileIfNotExists(historyFilePath);
+            createFileIfNotExists(barriersFilePath);
+        } catch (IOException e) {
+            log.error("gateActionIfHasAccess [2]: error = {}", e.getMessage());
+        }
+
+        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1,2025,1,1,1);
+        TreeMap<String,String> errors = new TreeMap<>();
+        errors.put(Constants.KEY_BARRIER,Constants.NOT_FOUND_BARRIER);
+        errors.put(Constants.KEY_SUBJECT,Constants.NOT_FOUND_SUBJECT);
+        Result<Object> expected = new Result<>(null,Constants.CODE_INVALID_DATA,errors);
+        log.info("barrierRegistration [2]: actual data = {}", actual);
+        log.info("barrierRegistration [3]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected,actual);
+        log.info("barrierRegistration [4]: - test succeeded");
+    }
+
+    @Test
+    void grantAccessIfAllFound() {
+        log.info("barrierRegistration [1]: - test started");
+
+        try {
+            createFileIfNotExists(motionsFilePath);
+            createFileIfNotExists(historyFilePath);
+            createFileIfNotExists(barriersFilePath);
+        } catch (IOException e) {
+            log.error("gateActionIfHasAccess [2]: error = {}", e.getMessage());
+        }
+
+        actualDataProviderCsv.barrierRegistration(1);
+        actualDataProviderCsv.saveOrUpdateSubject(createAnimal(null,"Red","animal"));
+        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1,2025,1,1,1);
+        Result<Object> expected = new Result<>(null,Constants.CODE_ACCESS,null);
+        log.info("barrierRegistration [2]: actual data = {}", actual);
+        log.info("barrierRegistration [3]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected,actual);
+        log.info("barrierRegistration [4]: - test succeeded");
+    }
+
 }

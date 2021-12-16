@@ -2,10 +2,8 @@ package ru.sfedu;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.sfedu.model.Animal;
-import ru.sfedu.model.Human;
-import ru.sfedu.model.SubjectType;
-import ru.sfedu.model.Transport;
+import ru.sfedu.api.DataProviderCsv;
+import ru.sfedu.model.*;
 
 import java.util.ArrayList;
 
@@ -31,15 +29,14 @@ public class Main {
         list.add(2);
         list.add(3);
         human.setType(SubjectType.USER);
-        //human.setId(2);
+        human.setId(2);
         human.setEmail("ekocaba2@mail.ru");
         human.setLogin("jenjd2");
         human.setPassword("15032002K");
-        human.setName("Maxx");
+        human.setName("Maxxx");
         human.setSurname("MaxSurname");
         human.setPatronymic("MaxPatronymic");
-        //ControlService controlService = new ControlService(new DataProviderCsv());
-        //log.info(controlService.objectRegistration(transport));
-        //controlService.gateAction(1,2,MoveType.OUT);
+        DataProviderCsv dataProviderCsv = new DataProviderCsv();
+        dataProviderCsv.gateAction(2,1, MoveType.OUT);
     }
 }

@@ -1,4 +1,6 @@
-package ru.sfedu.utils;
+package ru.sfedu;
+
+import ru.sfedu.utils.ConfigurationUtil;
 
 public class Constants {
     public static final int CODE_ERROR = 500;
@@ -43,6 +45,8 @@ public class Constants {
     public static final String KEY_COLOR = "color";
     public static final String KEY_NUMBER = "number";
     public static final String KEY_NICKNAME = "nickname";
+    public static final String KEY_SUBJECT = "subject";
+    public static final String KEY_BARRIER = "barrier";
 
     public static final String NOT_VALID_NAME = "Имя должно состоять из только букв латинского, длиною от 2 до 25 символов.";
     public static final String NOT_VALID_SURNAME = "Фамилия должна состоять из только букв латинского, длиною от 2 до 25 символов.";
@@ -53,4 +57,7 @@ public class Constants {
     public static final String NOT_VALID_NUMBER = String.format("Номер должен состоять только из букв латинского алфавита, цифр, пробелов и знака тире, длиною от %s до %s", ConfigurationUtil.getConfigurationEntry(ENV_TRANSPORT_NUMBER_MIN_LENGTH), ConfigurationUtil.getConfigurationEntry(ENV_TRANSPORT_NUMBER_MAX_LENGTH));
     public static final String NOT_VALID_COLOR = "Цвет должен состоять из только букв латинского, длиною от 3 до 20 символов.";
     public static final String NOT_VALID_NICKNAME = "Кличка должена состоять из только букв латинского, длиною от 3 до 20 символов.";
+
+    public static final String NOT_FOUND_BARRIER = "Такого входа нет в базе данных.";
+    public static final String NOT_FOUND_SUBJECT = "Такого пользователя нет в базе данных.";
 }
