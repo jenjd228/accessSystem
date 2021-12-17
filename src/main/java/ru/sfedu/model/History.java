@@ -1,31 +1,21 @@
 package ru.sfedu.model;
 
-import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvBindByPosition;
 
 import java.util.Objects;
 
 
-public class History {
+public class History extends OnlyId {
 
     public History() {
     }
 
-    @CsvBindByName
-    private Integer id;
-
-    @CsvBindByName
+    @CsvBindByPosition(position = 1)
     private Integer subjectId;
 
-    @CsvBindByName
+    @CsvBindByPosition(position = 2)
     private Long date;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public Integer getSubjectId() {
         return subjectId;
@@ -47,13 +37,14 @@ public class History {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof History)) return false;
+        if (!super.equals(o)) return false;
         History history = (History) o;
-        return Objects.equals(id, history.id) && Objects.equals(subjectId, history.subjectId) && Objects.equals(date, history.date);
+        return Objects.equals(subjectId, history.subjectId) && Objects.equals(date, history.date);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, subjectId, date);
+        return Objects.hash(super.hashCode(), subjectId, date);
     }
 
     @Override

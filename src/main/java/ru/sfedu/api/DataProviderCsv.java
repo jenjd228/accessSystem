@@ -279,7 +279,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     private boolean checkPermission(Integer subjectId, Integer barrierId) {
-        log.info("isSubjectHasAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        log.info("checkPermission [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
         boolean isHasAccess = false;
         try {
             FileReader fileReader = new FileReader(accessBarriersFilePath);
@@ -288,10 +288,10 @@ public class DataProviderCsv implements IDataProvider {
             for (String[] nextLine : reader) {
                 String[] records = nextLine[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
                 Long currentTime = getCurrentUtcTimeInMillis();
-                log.info("isSubjectHasAccess [2]: currentTime = {}, date = {}", currentTime, records[3]);
+                log.info("checkPermission [2]: currentTime = {}, date = {}", currentTime, records[3]);
                 if (records[1].equals(String.valueOf(subjectId)) && records[2].equals(String.valueOf(barrierId))
                         && Long.parseLong(records[3]) > currentTime) {
-                    log.info("isSubjectHasAccess [3]: subject has an access");
+                    log.info("checkPermission [3]: subject has an access");
                     isHasAccess = true;
                     break;
                 }
@@ -300,10 +300,10 @@ public class DataProviderCsv implements IDataProvider {
             fileReader.close();
             reader.close();
         } catch (Exception e) {
-            log.error("isSubjectHasAccess [4]: {}", e.getMessage());
+            log.error("checkPermission [4]: {}", e.getMessage());
         }
         if (!isHasAccess) {
-            log.info("isSubjectHasAccess [5] subject has no an access or there is no such a barrier");
+            log.info("checkPermission [5] subject has no an access or there is no such a barrier");
         }
         return isHasAccess;
     }
@@ -320,7 +320,7 @@ public class DataProviderCsv implements IDataProvider {
             } else {
                 log.info("saveMotion [2]: history cannot be create");
             }
-        } catch (IOException | CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | CsvValidationException e) {
+        } catch (Exception e) {
             log.error("saveMotion [3]: {}", e.getMessage());
         }
     }
@@ -372,11 +372,11 @@ public class DataProviderCsv implements IDataProvider {
 
         String[] strings;
         Barrier barrier;
-        String strBarrierId = barrierId.toString();
+        String records = barrierId.toString();
         while ((strings = reader.readNext()) != null) {
             String[] barStrings = strings[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
             barrier = createBarrier(Integer.valueOf(barStrings[0]), Integer.valueOf(barStrings[1]), false);
-            if (barStrings[0].contains(strBarrierId)) {
+            if (barStrings[0].contains(records)) {
                 log.info("updateBarrierStatus [2]: barrier has found");
                 barrier.setOpen(flag);
             } else {
@@ -427,7 +427,6 @@ public class DataProviderCsv implements IDataProvider {
             log.info("getHistoryIdForMotion [4]: result = {}", result);
         } catch (Exception e) {
             log.error("getHistoryIdForMotion [5]: {}", e.getMessage());
-            e.printStackTrace();
         }
         return result;
     }

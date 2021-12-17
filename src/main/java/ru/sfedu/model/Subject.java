@@ -4,21 +4,10 @@ import com.opencsv.bean.CsvBindByPosition;
 
 import java.util.Objects;
 
-public class Subject {
-
-    @CsvBindByPosition(position = 0)
-    protected Integer id;
+public class Subject extends OnlyId {
 
     @CsvBindByPosition(position = 1)
     protected SubjectType type;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public SubjectType getType() {
         return type;
@@ -32,13 +21,14 @@ public class Subject {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Subject)) return false;
+        if (!super.equals(o)) return false;
         Subject subject = (Subject) o;
-        return Objects.equals(id, subject.id) && type == subject.type;
+        return type == subject.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, type);
+        return Objects.hash(super.hashCode(), type);
     }
 
     @Override

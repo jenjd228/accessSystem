@@ -1,31 +1,23 @@
 package ru.sfedu.model;
-import com.opencsv.bean.CsvBindByName;
+
+import com.opencsv.bean.CsvBindByPosition;
 
 import java.util.Objects;
 
 
-public class AccessBarrier {
+public class AccessBarrier extends OnlyId {
 
-    public AccessBarrier(){}
+    public AccessBarrier() {
+    }
 
-    @CsvBindByName
-    private Integer id;
-
+    @CsvBindByPosition(position = 1)
     private Integer subjectId;
 
-    @CsvBindByName
+    @CsvBindByPosition(position = 2)
     private Integer barrierId;
 
-    @CsvBindByName
+    @CsvBindByPosition(position = 3)
     private Long date;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public Integer getSubjectId() {
         return subjectId;
@@ -55,13 +47,14 @@ public class AccessBarrier {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof AccessBarrier)) return false;
+        if (!super.equals(o)) return false;
         AccessBarrier that = (AccessBarrier) o;
-        return Objects.equals(id, that.id) && Objects.equals(subjectId, that.subjectId) && Objects.equals(barrierId, that.barrierId) && Objects.equals(date, that.date);
+        return Objects.equals(subjectId, that.subjectId) && Objects.equals(barrierId, that.barrierId) && Objects.equals(date, that.date);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, subjectId, barrierId, date);
+        return Objects.hash(super.hashCode(), subjectId, barrierId, date);
     }
 
     @Override

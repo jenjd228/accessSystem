@@ -1,32 +1,22 @@
 package ru.sfedu.model;
 
-import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvBindByPosition;
 
 import java.util.Objects;
 
-public class Motion {
+public class Motion extends OnlyId {
 
-    public Motion(){}
+    public Motion() {
+    }
 
-    @CsvBindByName
-    private Integer id;
-
-    @CsvBindByName
+    @CsvBindByPosition(position = 1)
     private Integer barrierId;
 
+    @CsvBindByPosition(position = 2)
     private Integer historyId;
 
-    @CsvBindByName
+    @CsvBindByPosition(position = 3)
     private MoveType eMoveType;
-
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public Integer getBarrierId() {
         return barrierId;
@@ -56,13 +46,14 @@ public class Motion {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Motion)) return false;
+        if (!super.equals(o)) return false;
         Motion motion = (Motion) o;
-        return Objects.equals(id, motion.id) && Objects.equals(barrierId, motion.barrierId) && Objects.equals(historyId, motion.historyId) && eMoveType == motion.eMoveType;
+        return Objects.equals(barrierId, motion.barrierId) && Objects.equals(historyId, motion.historyId) && eMoveType == motion.eMoveType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, barrierId, historyId, eMoveType);
+        return Objects.hash(super.hashCode(), barrierId, historyId, eMoveType);
     }
 
     @Override

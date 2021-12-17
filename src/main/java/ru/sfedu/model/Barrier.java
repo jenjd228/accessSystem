@@ -1,30 +1,20 @@
 package ru.sfedu.model;
 
 import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvBindByPosition;
 
 import java.util.Objects;
 
-public class Barrier {
+public class Barrier extends OnlyId {
 
     public Barrier() {
     }
 
-    @CsvBindByName
-    private Integer id;
-
-    @CsvBindByName
+    @CsvBindByPosition(position = 1)
     private Integer barrierFloor;
 
-    @CsvBindByName
+    @CsvBindByPosition(position = 2)
     public boolean isOpen;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public Integer getBarrierFloor() {
         return barrierFloor;
@@ -46,13 +36,14 @@ public class Barrier {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Barrier)) return false;
+        if (!super.equals(o)) return false;
         Barrier barrier = (Barrier) o;
-        return isOpen == barrier.isOpen && Objects.equals(id, barrier.id) && Objects.equals(barrierFloor, barrier.barrierFloor);
+        return isOpen == barrier.isOpen && Objects.equals(barrierFloor, barrier.barrierFloor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, barrierFloor, isOpen);
+        return Objects.hash(super.hashCode(), barrierFloor, isOpen);
     }
 
     @Override

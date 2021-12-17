@@ -2,7 +2,7 @@ package ru.sfedu;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.sfedu.api.DataProviderCsv;
+import ru.sfedu.api.DataProviderXml;
 import ru.sfedu.model.*;
 
 import java.util.ArrayList;
@@ -18,7 +18,6 @@ public class Main {
         animal.setNickName("Dog");
 
         Transport transport = new Transport();
-        transport.setId(2);
         transport.setType(SubjectType.TRANSPORT);
         transport.setColor("Black");
         transport.setNumber("number");
@@ -29,14 +28,17 @@ public class Main {
         list.add(2);
         list.add(3);
         human.setType(SubjectType.USER);
-        human.setId(2);
         human.setEmail("ekocaba2@mail.ru");
-        human.setLogin("jenjd2");
+        human.setLogin("jenjd22");
         human.setPassword("15032002K");
         human.setName("Maxxx");
         human.setSurname("MaxSurname");
         human.setPatronymic("MaxPatronymic");
-        DataProviderCsv dataProviderCsv = new DataProviderCsv();
-        dataProviderCsv.gateAction(2,1, MoveType.OUT);
+
+        /*DataProviderXml dataProviderXml = new DataProviderXml();
+        dataProviderXml.barrierRegistration(3);*/
+
+        DataProviderXml dataProviderXml = new DataProviderXml();
+        dataProviderXml.gateAction(1,1,MoveType.OUT);
     }
 }

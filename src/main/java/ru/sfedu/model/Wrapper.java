@@ -13,7 +13,11 @@ public class Wrapper<T> {
     @ElementListUnion({
             @ElementList(entry = "animal", type = Animal.class, inline = true),
             @ElementList(entry = "human", type = Human.class, inline = true),
-            @ElementList(entry = "transport", type = Transport.class, inline = true)
+            @ElementList(entry = "transport", type = Transport.class, inline = true),
+            @ElementList(entry = "barrier", type = Barrier.class, inline = true),
+            @ElementList(entry = "accessBarrier", type = AccessBarrier.class, inline = true),
+            @ElementList(entry = "history", type = History.class, inline = true),
+            @ElementList(entry = "motion", type = Motion.class, inline = true),
     })
     private List<T> list;
 
@@ -25,7 +29,7 @@ public class Wrapper<T> {
         this.list = list;
     }
 
-    public void addToList(T subject){
+    public void addToList(T subject) {
         list.add(subject);
     }
 

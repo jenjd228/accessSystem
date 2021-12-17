@@ -1,19 +1,29 @@
 package ru.sfedu.api;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+import com.opencsv.exceptions.CsvValidationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.simpleframework.xml.Serializer;
-import org.simpleframework.xml.core.Persister;
-import ru.sfedu.model.*;
 import ru.sfedu.Constants;
+import ru.sfedu.model.*;
+import ru.sfedu.utils.XmlUtil;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 import static ru.sfedu.utils.FileUtil.createFolderIfNotExists;
+import static ru.sfedu.utils.SubjectUtil.*;
+import static ru.sfedu.utils.TImeUtil.getCurrentUtcTimeInMillis;
+import static ru.sfedu.utils.TImeUtil.getUtcTimeInMillis;
+import static ru.sfedu.utils.XmlUtil.*;
 
 public class DataProviderXml implements IDataProvider {
 
@@ -34,20 +44,48 @@ public class DataProviderXml implements IDataProvider {
 
         try {
             createFolderIfNotExists(Constants.XML_PATH_FOLDER);
-            createFileIfNotExists(subjectsFilePath);
-            createFileIfNotExists(accessBarriersFilePath);
-            createFileIfNotExists(motionsFilePath);
-            createFileIfNotExists(historyFilePath);
-            createFileIfNotExists(barriersFilePath);
+            createCommonFiles();
         } catch (IOException e) {
             log.error("DataProviderXml - initialization error");
         }
+    }
+
+    public DataProviderXml(String path) {
+        String mainFolder = path.concat(Constants.XML_PATH_FOLDER);
+        subjectsFilePath = mainFolder.concat(Constants.SUBJECT_FILENAME).concat(Constants.XML_FILE_TYPE);
+        accessBarriersFilePath = mainFolder.concat(Constants.ACCESSIBLE_BARRIERS_FILENAME).concat(Constants.XML_FILE_TYPE);
+        motionsFilePath = mainFolder.concat(Constants.MOTIONS_FILENAME).concat(Constants.XML_FILE_TYPE);
+        historyFilePath = mainFolder.concat(Constants.HISTORY_FILENAME).concat(Constants.XML_FILE_TYPE);
+        barriersFilePath = mainFolder.concat(Constants.BARRIERS_FILENAME).concat(Constants.XML_FILE_TYPE);
+
+        try {
+            createFolderIfNotExists(mainFolder);
+            createCommonFiles();
+        } catch (IOException e) {
+            log.error("DataProviderXml - initialization error");
+        }
+    }
+
+    private void createCommonFiles() throws IOException {
+        createFileIfNotExists(subjectsFilePath);
+        createFileIfNotExists(accessBarriersFilePath);
+        createFileIfNotExists(motionsFilePath);
+        createFileIfNotExists(historyFilePath);
+        createFileIfNotExists(barriersFilePath);
     }
 
     @Override
     public Result<Object> saveOrUpdateSubject(Subject subject) {
         log.info("saveOrUpdateSubject [1]: {}", subject);
         Result<Object> result;
+
+        Result<TreeMap<String, String>> validationResult = objectValidation(subject);
+        Result<Subject> saveResult = new Result<>(null, Constants.CODE_ERROR, subject);
+
+        if (validationResult.getCode() != Constants.CODE_ACCESS && !validationResult.getResult().isEmpty()) {
+            return new Result<>(validationResult.getMessage(), validationResult.getCode(), new AbstractMap.SimpleEntry<>(saveResult.getResult(), validationResult.getResult()));
+        }
+
         try {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
@@ -66,21 +104,137 @@ public class DataProviderXml implements IDataProvider {
 
     @Override
     public boolean barrierRegistration(Integer barrierFloor) {
-        return false;
+        log.info("barrierRegistration [1]: barrierFloor = {}", barrierFloor);
+        Barrier barrier;
+        try {
+            barrier = createBarrier(getNewObjectId(barriersFilePath), barrierFloor, false);
+            write(barriersFilePath, barrier);
+        } catch (Exception e) {
+            log.error("barrierRegistration [2]: error = {}", e.getMessage());
+            return false;
+        }
+        log.info("barrierRegistration [3]: barrier created successfully = {}", barrier);
+        return true;
     }
 
     @Override
     public Result<Object> grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours) {
-        return new Result<>();
+        log.info("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        AccessBarrier accessBarrier;
+        Result<Object> result = new Result<>();
+        try {
+            accessBarrier = createAccessBarrier(getNewObjectId(accessBarriersFilePath), subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
+            Result<TreeMap<String,String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId,barrierId);
+            if (checkResult.getCode() == Constants.CODE_ACCESS) {
+                XmlUtil.write(accessBarriersFilePath,accessBarrier);
+                result.setCode(Constants.CODE_ACCESS);
+            } else {
+                result.setCode(Constants.CODE_INVALID_DATA);
+                result.setResult(checkResult.getResult());
+            }
+        } catch (Exception e) {
+            log.error("grantAccess [2]: error = {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+            return result;
+        }
+        log.info("grantAccess [3]: access granted successfully = {}", accessBarrier);
+        return result;
     }
 
     @Override
     public boolean gateAction(Integer subjectId, Integer barrierId, MoveType moveType) {
-        return false;
+        motionRegistration(subjectId, barrierId, moveType);
+        boolean isSubjectHasAccess = checkPermission(subjectId, barrierId);
+        if (isSubjectHasAccess) {
+            openOrCloseBarrier(barrierId, true);
+            openOrCloseBarrier(barrierId, false);
+        }
+        return isSubjectHasAccess;
     }
 
-    private void openOrCloseBarrier(Integer barrierId, boolean flag) {
+    private boolean openOrCloseBarrier(Integer barrierId, boolean flag) {
+        log.info("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
+        AtomicBoolean isAccess = new AtomicBoolean(false);
+        try {
+            Wrapper<Barrier> wrapper = readFile(barriersFilePath);
+            List<Barrier> list = wrapper.getList();
 
+            list.stream().filter(it -> it.getId().equals(barrierId))
+                    .findFirst()
+                    .ifPresent(it -> {
+                        log.info("openOrCloseBarrier [2]: barrier has found");
+                        try {
+                            updateBarrierStatus(barrierId, flag);
+                        } catch (Exception e) {
+                            log.error("openOrCloseBarrier [3]: error = {}",e.getMessage());
+                        }
+                        isAccess.set(true);
+                    });
+        } catch (Exception e) {
+            log.error("openOrCloseBarrier [3]: error = {}", e.getMessage());
+        }
+        return isAccess.get();
+    }
+
+    private Result<TreeMap<String,String>> checkForExistenceSubjectAndBarrier(Integer subjectId, Integer barrierId) {
+        Result<Subject> subjectResult = getSubjectById(subjectId);
+        Result<Barrier> barrierResult = getBarrierById(barrierId);
+        Result<TreeMap<String,String>> result = new Result<>();
+        result.setCode(Constants.CODE_ACCESS);
+        TreeMap<String,String> errors = new TreeMap<>();
+
+        if (subjectResult.getCode() != Constants.CODE_ACCESS){
+            errors.put(Constants.KEY_SUBJECT,Constants.NOT_FOUND_SUBJECT);
+            result.setCode(Constants.CODE_NOT_FOUND);
+        }
+
+        if (barrierResult.getCode() != Constants.CODE_ACCESS){
+            errors.put(Constants.KEY_BARRIER,Constants.NOT_FOUND_BARRIER);
+            result.setCode(Constants.CODE_NOT_FOUND);
+        }
+        result.setResult(errors);
+        return result;
+    }
+
+    private Result<Barrier> getBarrierById(Integer barrierId) {
+        log.info("getBarrierById [1]: id = {}", barrierId);
+        Result<Barrier> result = new Result<>();
+        result.setCode(Constants.CODE_NOT_FOUND);
+
+        try {
+            Wrapper<Barrier> wrapper = readFile(barriersFilePath);
+            wrapper.getList().stream().filter(it -> it.getId().equals(barrierId))
+                    .findFirst()
+                    .ifPresent(it -> {
+                        result.setResult(it);
+                        result.setCode(Constants.CODE_ACCESS);
+                    });
+        } catch (Exception e) {
+            log.error("getBarrierById [2]: {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+            result.setMessage(e.getMessage());
+        }
+
+        log.info("getBarrierById [3]: result {}", result);
+        return result;
+    }
+
+    private void updateBarrierStatus(Integer barrierId, boolean flag) throws Exception {
+        log.info("updateBarrierStatus [1] : {}, isOpen = {}", barrierId, flag);
+        Wrapper<Barrier> wrapper = readFile(barriersFilePath);
+        List<Barrier> list = wrapper.getList();
+        list.stream().filter(it -> it.getId().equals(barrierId))
+                .findFirst()
+                .ifPresent(it -> {
+                    log.info("updateBarrierStatus [2]: barrier has found");
+                    it.setOpen(flag);
+                    try {
+                        XmlUtil.write(barriersFilePath,it);
+                    } catch (Exception e) {
+                        log.error("updateBarrierStatus [3]: error = {}",e.getMessage());
+                    }
+                });
+        log.info("updateBarrierStatus [6] : barrier modification is successful");
     }
 
     private Result<Subject> getSubjectById(Integer id) {
@@ -89,9 +243,7 @@ public class DataProviderXml implements IDataProvider {
         result.setCode(Constants.CODE_NOT_FOUND);
 
         try {
-            Serializer serializer = new Persister();
-            File file = new File(subjectsFilePath);
-            Wrapper subjectWrapper = serializer.read(Wrapper.class, file);
+            Wrapper subjectWrapper = readFile(subjectsFilePath);
             for (Object object : subjectWrapper.getList()) {
                 Subject subject = (Subject) object;
                 if (subject.getId().equals(id)) {
@@ -113,24 +265,9 @@ public class DataProviderXml implements IDataProvider {
     private Result<Object> writeNewSubject(Subject subject) {
         log.info("writeNewSubject [1] : New subject is creating");
 
-        Serializer serializer = new Persister();
-        File file = new File(subjectsFilePath);
-
-        Wrapper wrapper;
         try {
-            wrapper = serializer.read(Wrapper.class, file);
-            subject.setId(getNewSubjectId(wrapper.getList()));
-            wrapper.addToList(subject);
-        } catch (Exception e) {
-            wrapper = new Wrapper();
-            List list = new ArrayList();
-            subject.setId(getNewSubjectId(list));
-            list.add(subject);
-            wrapper.setList(list);
-        }
-
-        try {
-            serializer.write(wrapper, file);
+            subject.setId(getNewObjectId(subjectsFilePath));
+            write(subjectsFilePath, subject);
         } catch (Exception ex) {
             new Result<>(ex.getMessage(), Constants.CODE_ERROR, null);
         }
@@ -141,27 +278,8 @@ public class DataProviderXml implements IDataProvider {
 
     private Result<Object> saveModifySubject(Subject subject) {
         log.info("saveModifyUser [1] : {}", subject);
-        File file = new File(subjectsFilePath);
-
-        Serializer serializer = new Persister();
-
         try {
-            Wrapper wrapper = serializer.read(Wrapper.class, file);
-            List list = wrapper.getList();
-
-            for (int i = 0; i < list.size(); i++) {
-                Subject myObject = (Subject) list.get(i);
-                if (myObject.getId().equals(subject.getId())) {
-                    log.info("saveModifyUser [2]: subject has found");
-                    list.set(i, subject);
-                    break;
-                }
-            }
-
-            wrapper.setList(list);
-
-            serializer.write(wrapper, file);
-
+            write(subjectsFilePath, subject);
         } catch (Exception e) {
             log.error("saveModifyUser [3]: {}", e.getMessage());
             return new Result<>(e.getMessage(), Constants.CODE_ERROR, null);
@@ -171,18 +289,96 @@ public class DataProviderXml implements IDataProvider {
         return new Result<>(null, Constants.CODE_ACCESS, subject);
     }
 
-    private Integer getNewSubjectId(List list) {
-        if (list.isEmpty()) {
-            return 1;
-        }
-        return ((Subject) list.get(list.size() - 1)).getId() + 1;
-    }
+    private boolean checkPermission(Integer subjectId, Integer barrierId) {
+        log.info("checkPermission [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        AtomicBoolean isHasAccess = new AtomicBoolean(false);
+        try {
 
-    public boolean checkPermission(Integer subjectId, Integer barrierId) {
-        return false;
+            Wrapper<AccessBarrier> wrapper = readFile(accessBarriersFilePath);
+            List<AccessBarrier> list = wrapper.getList();
+            Long currentTime = getCurrentUtcTimeInMillis();
+
+            list.stream().filter(it -> it.getSubjectId().equals(subjectId) && it.getBarrierId().equals(barrierId) && it.getDate() > currentTime)
+                    .findFirst()
+                    .ifPresent(it ->{
+                        log.info("checkPermission [3]: subject has an access");
+                        isHasAccess.set(true);
+                    });
+        } catch (Exception e) {
+            log.error("checkPermission [4]: {}", e.getMessage());
+        }
+        if (!isHasAccess.get()) {
+            log.info("checkPermission [5] subject has no an access or there is no such a barrier");
+        }
+        return isHasAccess.get();
     }
 
     private void motionRegistration(Integer subjectId, Integer barrierId, MoveType moveType) {
+        log.info("motionRegistration [1]: subjectId = {}, barrierId = {}, moveType = {}", subjectId, barrierId, moveType);
+        try {
+            Motion motion = createMotion(barrierId, moveType);
+            motion.setId(getNewObjectId(motionsFilePath));
+            Result<Integer> result = getHistoryIdForMotion(subjectId);
+            if (result.getCode() == Constants.CODE_ACCESS) {
+                motion.setHistoryId(result.getResult());
+                write(motionsFilePath, motion);
+            } else {
+                log.info("motionRegistration [2]: history cannot be create");
+            }
+        } catch (Exception e) {
+            log.error("motionRegistration [3]: {}", e.getMessage());
+        }
+    }
 
+    private Result<Integer> getHistoryIdForMotion(Integer subjectId) {
+        log.info("getHistoryIdForMotion [1]: subjectId = {}", subjectId);
+        Result<Integer> result = new Result<>(null, Constants.CODE_ERROR, null);
+        try {
+            try {
+                Wrapper wrapper = readFile(historyFilePath);
+                List<History> list = wrapper.getList();
+
+                Long currentUtcTime = getCurrentUtcTimeInMillis();
+
+                list.stream().filter(it -> it.getSubjectId().equals(subjectId) && it.getDate().equals(currentUtcTime))
+                        .findFirst()
+                        .ifPresent(it -> {
+                            log.info("getHistoryIdForMotion [2] history has found historyId = {}", it.getId());
+                            result.setCode(Constants.CODE_ACCESS);
+                            result.setResult(it.getId());
+                        });
+                if (result.getCode() == Constants.CODE_ACCESS){
+                    return result;
+                }
+            }catch (Exception e){
+                log.error("getHistoryIdForMotion [3]: error = {}",e.getMessage());
+            }
+
+            Result<History> resultHistory = createAndSaveHistory(subjectId);
+            if (resultHistory.getCode() == Constants.CODE_ACCESS) {
+                result.setCode(Constants.CODE_ACCESS);
+                result.setResult(resultHistory.getResult().getId());
+            }
+            log.info("getHistoryIdForMotion [4]: result = {}", result);
+        } catch (Exception e) {
+            log.error("getHistoryIdForMotion [5]: error {}", e.getMessage());
+        }
+        return result;
+    }
+
+    private Result<History> createAndSaveHistory(Integer subjectId) {
+        log.info("createAndSaveHistory [1]: subjectId = {}", subjectId);
+        Result<History> result = new Result<>(null, Constants.CODE_ERROR, null);
+        try {
+            Integer newHistoryId = getNewObjectId(historyFilePath);
+            History history = createHistory(subjectId, newHistoryId);
+            write(historyFilePath,history);
+            result.setCode(Constants.CODE_ACCESS);
+            result.setResult(history);
+            log.info("createAndSaveHistory [2]: history = {}", history);
+        } catch (Exception e) {
+            log.error("createAndSaveHistory [3]: {}", e.getMessage());
+        }
+        return result;
     }
 }
