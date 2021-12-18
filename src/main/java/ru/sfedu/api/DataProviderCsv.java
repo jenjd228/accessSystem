@@ -73,7 +73,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     @Override
-    public Result<Object> saveOrUpdateSubject(Subject subject) {
+    public Result<Object> subjectRegistration(Subject subject) {
         log.info("saveSubject [1]: {}", subject);
 
         Result<TreeMap<String, String>> validationResult = objectValidation(subject);

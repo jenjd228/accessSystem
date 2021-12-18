@@ -5,7 +5,7 @@ import ru.sfedu.model.Result;
 import ru.sfedu.model.Subject;
 
 public interface IDataProvider {
-    Result<Object> saveOrUpdateSubject(Subject subject);
+    Result<Object> subjectRegistration(Subject subject);
 
     boolean barrierRegistration(Integer barrierFloor);
 
