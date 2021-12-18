@@ -11,7 +11,7 @@ public class BaseTest {
         Animal animal = new Animal();
         animal.setType(SubjectType.ANIMAL);
         animal.setColor(color);
-        animal.setNickName(nickName);
+        animal.setName(nickName);
         animal.setId(id);
         return animal;
     }

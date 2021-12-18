@@ -77,7 +77,7 @@ class DataProviderCsvTest extends BaseTest {
         Animal expectedAnimal = createAnimal(null, "Red2", "animal123");
         TreeMap<String, String> errors = new TreeMap<>();
         errors.put(Constants.KEY_COLOR, Constants.NOT_VALID_COLOR);
-        errors.put(Constants.KEY_NICKNAME, Constants.NOT_VALID_NICKNAME);
+        errors.put(Constants.KEY_NAME, Constants.NOT_VALID_NICKNAME);
 
         Result<Object> actual = actualDataProviderCsv.subjectRegistration(actualAnimal);
         Result<TreeMap<String, String>> expected = new Result(null, Constants.CODE_INVALID_DATA, new AbstractMap.SimpleEntry<>(expectedAnimal, errors));

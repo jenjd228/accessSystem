@@ -2,10 +2,18 @@ package ru.sfedu;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.sfedu.api.DataProviderXml;
-import ru.sfedu.model.*;
+import ru.sfedu.api.DataProviderH2;
+import ru.sfedu.model.Animal;
+import ru.sfedu.model.Human;
+import ru.sfedu.model.SubjectType;
+import ru.sfedu.model.Transport;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.util.ArrayList;
+
+import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 
 public class Main {
 
@@ -15,7 +23,7 @@ public class Main {
         Animal animal = new Animal();
         animal.setType(SubjectType.ANIMAL);
         animal.setColor("Red");
-        animal.setNickName("Dog");
+        animal.setName("Dog");
 
         Transport transport = new Transport();
         transport.setType(SubjectType.TRANSPORT);
@@ -38,7 +46,18 @@ public class Main {
         /*DataProviderXml dataProviderXml = new DataProviderXml();
         dataProviderXml.barrierRegistration(3);*/
 
-        DataProviderXml dataProviderXml = new DataProviderXml();
-        dataProviderXml.gateAction(1,1,MoveType.OUT);
+        /*DataProviderXml dataProviderXml = new DataProviderXml();
+        dataProviderXml.gateAction(1,1,MoveType.OUT);*/
+
+        /*try {
+            Class.forName(getConfigurationEntry(Constants.H2_DRIVER)).getDeclaredConstructor().newInstance();
+            Connection connection = DriverManager.getConnection(
+                    getConfigurationEntry(Constants.H2_CONNECTOR).concat(Constants.H2_PATH_FOLDER).concat(Constants.H2_DB_NAME),
+                    getConfigurationEntry(Constants.H2_LOGIN),
+                    getConfigurationEntry(Constants.H2_PASSWORD));
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
     }
 }

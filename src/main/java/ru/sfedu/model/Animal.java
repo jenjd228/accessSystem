@@ -11,18 +11,17 @@ public class Animal extends Subject {
     }
 
     @CsvBindByPosition(position = 2)
-    private String nickName;
+    private String name;
 
     @CsvBindByPosition(position = 3)
     private String color;
 
-
-    public String getNickName() {
-        return nickName;
+    public String getName() {
+        return name;
     }
 
-    public void setNickName(String nickName) {
-        this.nickName = nickName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getColor() {
@@ -39,18 +38,18 @@ public class Animal extends Subject {
         if (!(o instanceof Animal)) return false;
         if (!super.equals(o)) return false;
         Animal animal = (Animal) o;
-        return Objects.equals(nickName, animal.nickName) && Objects.equals(color, animal.color);
+        return Objects.equals(name, animal.name) && Objects.equals(color, animal.color);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), nickName, color);
+        return Objects.hash(super.hashCode(), name, color);
     }
 
     @Override
     public String toString() {
         return "Animal{" +
-                "nickName='" + nickName + '\'' +
+                "nickName='" + name + '\'' +
                 ", color='" + color + '\'' +
                 ", id=" + id +
                 ", type=" + type +

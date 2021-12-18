@@ -4,5 +4,6 @@ logs/
 csv/
 testFolder/
 xml/
+h2/
 *.iml
 *.log

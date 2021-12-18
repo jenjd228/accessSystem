@@ -130,8 +130,8 @@ public class SubjectUtil {
             errors.put(Constants.KEY_COLOR, Constants.NOT_VALID_COLOR);
         }
 
-        if (!checkByPattern(animal.getNickName(), Constants.REGEX_SHORT_STRING)) {
-            errors.put(Constants.KEY_NICKNAME, Constants.NOT_VALID_NICKNAME);
+        if (!checkByPattern(animal.getName(), Constants.REGEX_SHORT_STRING)) {
+            errors.put(Constants.KEY_NAME, Constants.NOT_VALID_NICKNAME);
         }
 
         if (!errors.isEmpty()) {
@@ -162,7 +162,7 @@ public class SubjectUtil {
     public static Motion createMotion(Integer barrierId, MoveType moveType) {
         Motion motion = new Motion();
         motion.setBarrierId(barrierId);
-        motion.seteMoveType(moveType);
+        motion.setMoveType(moveType);
         return motion;
     }
 
@@ -177,7 +177,7 @@ public class SubjectUtil {
     public static Subject createAnimal(Integer id, String nickName, String color) {
         Animal animal = new Animal();
         setCommonFields(animal, id, SubjectType.ANIMAL);
-        animal.setNickName(nickName);
+        animal.setName(nickName);
         animal.setColor(color);
         return animal;
     }

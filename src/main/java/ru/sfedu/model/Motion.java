@@ -16,7 +16,7 @@ public class Motion extends OnlyId {
     private Integer historyId;
 
     @CsvBindByPosition(position = 3)
-    private MoveType eMoveType;
+    private MoveType moveType;
 
     public Integer getBarrierId() {
         return barrierId;
@@ -34,12 +34,12 @@ public class Motion extends OnlyId {
         this.historyId = historyId;
     }
 
-    public MoveType geteMoveType() {
-        return eMoveType;
+    public MoveType getMoveType() {
+        return moveType;
     }
 
-    public void seteMoveType(MoveType eMoveType) {
-        this.eMoveType = eMoveType;
+    public void setMoveType(MoveType moveType) {
+        this.moveType = moveType;
     }
 
     @Override
@@ -48,12 +48,12 @@ public class Motion extends OnlyId {
         if (!(o instanceof Motion)) return false;
         if (!super.equals(o)) return false;
         Motion motion = (Motion) o;
-        return Objects.equals(barrierId, motion.barrierId) && Objects.equals(historyId, motion.historyId) && eMoveType == motion.eMoveType;
+        return Objects.equals(barrierId, motion.barrierId) && Objects.equals(historyId, motion.historyId) && moveType == motion.moveType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), barrierId, historyId, eMoveType);
+        return Objects.hash(super.hashCode(), barrierId, historyId, moveType);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class Motion extends OnlyId {
                 "id=" + id +
                 ", barrierId=" + barrierId +
                 ", historyId=" + historyId +
-                ", eMoveType=" + eMoveType +
+                ", eMoveType=" + moveType +
                 '}';
     }
 }
