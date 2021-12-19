@@ -3,10 +3,7 @@ package ru.sfedu;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.sfedu.api.DataProviderH2;
-import ru.sfedu.model.Animal;
-import ru.sfedu.model.Human;
-import ru.sfedu.model.SubjectType;
-import ru.sfedu.model.Transport;
+import ru.sfedu.model.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -46,12 +43,14 @@ public class Main {
         /*DataProviderXml dataProviderXml = new DataProviderXml();
         dataProviderXml.gateAction(1,1,MoveType.OUT);*/
 
-        printSubjectData();
+        //printBarrierData();
+        //printMotionData();
 
         DataProviderH2 dataProviderH2 = new DataProviderH2();
-        dataProviderH2.subjectRegistration(animal);
+        dataProviderH2.gateAction(1, 1, MoveType.OUT);
 
-        printSubjectData();
+        printMotionData();
+        printBarrierData();
     }
 
     private static void printSubjectData() {
@@ -65,6 +64,60 @@ public class Main {
             ResultSet resultSet = connection.createStatement().executeQuery("select * from subject");
             while (resultSet.next()) {
                 System.out.println(resultSet.getString("name"));
+            }
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void printBarrierData() {
+        try {
+            Class.forName(getConfigurationEntry(Constants.H2_DRIVER)).getDeclaredConstructor().newInstance();
+            Connection connection = DriverManager.getConnection(
+                    getConfigurationEntry(Constants.H2_CONNECTOR).concat("./").concat(Constants.H2_PATH_FOLDER).concat(Constants.H2_DB_NAME),
+                    getConfigurationEntry(Constants.H2_LOGIN),
+                    getConfigurationEntry(Constants.H2_PASSWORD));
+
+            ResultSet resultSet = connection.createStatement().executeQuery("select * from ".concat(Constants.SQL_TABLE_NAME_BARRIER));
+            while (resultSet.next()) {
+                System.out.println(resultSet.getString("id").concat(" ").concat(resultSet.getString("isOpen")));
+            }
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void printMotionData() {
+        try {
+            Class.forName(getConfigurationEntry(Constants.H2_DRIVER)).getDeclaredConstructor().newInstance();
+            Connection connection = DriverManager.getConnection(
+                    getConfigurationEntry(Constants.H2_CONNECTOR).concat("./").concat(Constants.H2_PATH_FOLDER).concat(Constants.H2_DB_NAME),
+                    getConfigurationEntry(Constants.H2_LOGIN),
+                    getConfigurationEntry(Constants.H2_PASSWORD));
+
+            ResultSet resultSet = connection.createStatement().executeQuery("select * from ".concat(Constants.SQL_TABLE_NAME_MOTION));
+            while (resultSet.next()) {
+                System.out.println(resultSet.getString("id").concat(" ").concat(resultSet.getString("barrierId")).concat(resultSet.getString("historyId")).concat(resultSet.getString("moveType")));
+            }
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void printAccessBarrierData() {
+        try {
+            Class.forName(getConfigurationEntry(Constants.H2_DRIVER)).getDeclaredConstructor().newInstance();
+            Connection connection = DriverManager.getConnection(
+                    getConfigurationEntry(Constants.H2_CONNECTOR).concat("./").concat(Constants.H2_PATH_FOLDER).concat(Constants.H2_DB_NAME),
+                    getConfigurationEntry(Constants.H2_LOGIN),
+                    getConfigurationEntry(Constants.H2_PASSWORD));
+
+            ResultSet resultSet = connection.createStatement().executeQuery("select * from ".concat(Constants.SQL_TABLE_NAME_ACCESS_BARRIER));
+            while (resultSet.next()) {
+                System.out.println(resultSet.getString("id").concat(" ").concat(resultSet.getString("isOpen")));
             }
             connection.close();
         } catch (Exception e) {

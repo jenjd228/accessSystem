@@ -1,6 +1,5 @@
 package ru.sfedu.model;
 
-import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvBindByPosition;
 
 import java.util.Objects;
@@ -14,7 +13,7 @@ public class Barrier extends OnlyId {
     private Integer barrierFloor;
 
     @CsvBindByPosition(position = 2)
-    public boolean isOpen;
+    private boolean isOpen;
 
     public Integer getBarrierFloor() {
         return barrierFloor;

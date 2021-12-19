@@ -11,6 +11,7 @@ import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 import static ru.sfedu.utils.SubjectUtil.*;
+import static ru.sfedu.utils.TImeUtil.getCurrentUtcTimeInMillis;
 
 public class DataProviderH2 implements IDataProvider {
 
@@ -81,7 +82,20 @@ public class DataProviderH2 implements IDataProvider {
 
     @Override
     public boolean barrierRegistration(Integer barrierFloor) {
-        return false;
+        log.info("barrierRegistration [1]: barrierFloor = {}", barrierFloor);
+        Barrier barrier;
+        try {
+            barrier = createBarrier(null, barrierFloor, false);
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(String.format(Constants.INSERT_BARRIER, barrier.getBarrierFloor(), barrier.isOpen()));
+            closeStatementAndConnection(connection, statement);
+        } catch (SQLException e) {
+            log.error("barrierRegistration [2]: error = {}", e.getMessage());
+            return false;
+        }
+        log.info("barrierRegistration [3]: barrier created successfully = {}", barrier);
+        return true;
     }
 
     @Override
@@ -91,7 +105,132 @@ public class DataProviderH2 implements IDataProvider {
 
     @Override
     public boolean gateAction(Integer subjectId, Integer barrierId, MoveType moveType) {
-        return false;
+        motionRegistration(subjectId, barrierId, moveType);
+        boolean isSubjectHasAccess = checkPermission(subjectId, barrierId);
+        if (isSubjectHasAccess) {
+            openOrCloseBarrier(barrierId, true);
+            openOrCloseBarrier(barrierId, false);
+        }
+        return isSubjectHasAccess;
+    }
+
+    private void openOrCloseBarrier(Integer barrierId, boolean flag) {
+        log.info("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
+        try {
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+            int rowsUpdates = statement.executeUpdate(String.format(Constants.UPDATE_BARRIER_IS_OPEN, flag, barrierId));
+            if (rowsUpdates != 0) {
+                log.info("openOrCloseBarrier [2]: barrier has updated");
+            } else {
+                log.info("openOrCloseBarrier [2]: barrier not found");
+            }
+            closeStatementAndConnection(connection, statement);
+        } catch (SQLException e) {
+            log.error("openOrCloseBarrier [3]: error = {}", e.getMessage());
+        }
+    }
+
+    private boolean checkPermission(Integer subjectId, Integer barrierId) {
+        log.info("checkPermission [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        boolean isHasAccess = false;
+        try {
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+
+            Long currentTime = getCurrentUtcTimeInMillis();
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_ACCESS_BARRIER_IF_HAS_PERMISSION, subjectId, barrierId, currentTime));
+
+            if (resultSet.next()) {
+                log.info("checkPermission [3]: subject has an access");
+                isHasAccess = true;
+            } else {
+                log.info("checkPermission [5] subject has no an access or there is no such a barrier");
+            }
+            closeStatementAndConnection(connection, statement);
+        } catch (Exception e) {
+            log.error("checkPermission [4]: {}", e.getMessage());
+        }
+        return isHasAccess;
+    }
+
+    private void motionRegistration(Integer subjectId, Integer barrierId, MoveType moveType) {
+        log.info("saveMotion [1]: subjectId = {}, barrierId = {}, moveType = {}", subjectId, barrierId, moveType);
+        try {
+            Motion motion = createMotion(barrierId, moveType);
+            Result<String> result = getHistoryIdForMotion(subjectId);
+            if (result.getCode() == Constants.CODE_ACCESS) {
+                motion.setHistoryId(Integer.parseInt(result.getResult()));
+                Connection connection = connection();
+                Statement statement = connection.createStatement();
+                statement.executeUpdate(String.format(Constants.INSERT_MOTION, motion.getBarrierId(), motion.getHistoryId(), motion.getMoveType()));
+                closeStatementAndConnection(connection, statement);
+            } else {
+                log.info("saveMotion [2]: history cannot be create");
+            }
+        } catch (Exception e) {
+            log.error("saveMotion [3]: {}", e.getMessage());
+        }
+    }
+
+    private Result<String> getHistoryIdForMotion(Integer subjectId) {
+        log.info("getHistoryIdForMotion [1]: subjectId = {}", subjectId);
+        Result<String> result = new Result<>(null, Constants.CODE_ERROR, null);
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            connection = connection();
+            statement = connection.createStatement();
+
+            Long currentUtcTime = getCurrentUtcTimeInMillis();
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_HISTORY_BY_DATE_AND_SUBJECT_ID, currentUtcTime, subjectId));
+
+            if (resultSet.next()) {
+                String id = resultSet.getString(Constants.KEY_ID);
+                log.info("getHistoryIdForMotion [2] history has found historyId = {}", id);
+                result.setCode(Constants.CODE_ACCESS);
+                result.setResult(id);
+                closeStatementAndConnection(connection, statement);
+                return result;
+            }
+
+            log.info("getHistoryIdForMotion [3]: history not found");
+
+            Result<History> resultHistory = createAndSaveHistory(subjectId);
+            if (resultHistory.getCode() == Constants.CODE_ACCESS) {
+                result.setCode(Constants.CODE_ACCESS);
+                result.setResult(resultHistory.getResult().getId().toString());
+            }
+            log.info("getHistoryIdForMotion [4]: result = {}", result);
+        } catch (Exception e) {
+            log.error("getHistoryIdForMotion [5]: {}", e.getMessage());
+        } finally {
+            closeStatementAndConnection(connection, statement);
+        }
+        return result;
+    }
+
+    private Result<History> createAndSaveHistory(Integer subjectId) {
+        log.info("createAndSaveHistory [1]: subjectId = {}", subjectId);
+        Result<History> result = new Result<>(null, Constants.CODE_ERROR, null);
+        try {
+            History history = createHistory(subjectId, null);
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(String.format(Constants.INSERT_HISTORY, history.getSubjectId(), history.getDate()));
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_HISTORY_BY_DATE_AND_SUBJECT_ID, history.getDate(), history.getSubjectId()));
+            if (resultSet.next()){
+                history.setId(Integer.parseInt(resultSet.getString(Constants.KEY_ID)));
+                result.setCode(Constants.CODE_ACCESS);
+                result.setResult(history);
+                log.info("createAndSaveHistory [2]: history = {}", history);
+            }else {
+                log.info("createAndSaveHistory [3]: history not found = {}", history);
+            }
+        } catch (Exception e) {
+            log.error("createAndSaveHistory [4]: {}", e.getMessage());
+        }
+        return result;
     }
 
     private Result<Object> writeNewSubject(Subject subject) throws SQLException {

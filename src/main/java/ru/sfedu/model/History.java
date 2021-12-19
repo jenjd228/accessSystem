@@ -16,7 +16,6 @@ public class History extends OnlyId {
     @CsvBindByPosition(position = 2)
     private Long date;
 
-
     public Integer getSubjectId() {
         return subjectId;
     }

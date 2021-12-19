@@ -139,6 +139,17 @@ public class DataProviderCsv implements IDataProvider {
         return result;
     }
 
+    @Override
+    public boolean gateAction(Integer subjectId, Integer barrierId, MoveType moveType) {
+        motionRegistration(subjectId, barrierId, moveType);
+        boolean isSubjectHasAccess = checkPermission(subjectId, barrierId);
+        if (isSubjectHasAccess) {
+            openOrCloseBarrier(barrierId, true);
+            openOrCloseBarrier(barrierId, false);
+        }
+        return isSubjectHasAccess;
+    }
+
     private Result<TreeMap<String,String>> checkForExistenceSubjectAndBarrier(Integer subjectId, Integer barrierId) {
         Result<Subject> subjectResult = getSubjectById(subjectId);
         Result<Barrier> barrierResult = getBarrierById(barrierId);
@@ -157,17 +168,6 @@ public class DataProviderCsv implements IDataProvider {
         }
         result.setResult(errors);
         return result;
-    }
-
-    @Override
-    public boolean gateAction(Integer subjectId, Integer barrierId, MoveType moveType) {
-        motionRegistration(subjectId, barrierId, moveType);
-        boolean isSubjectHasAccess = checkPermission(subjectId, barrierId);
-        if (isSubjectHasAccess) {
-            openOrCloseBarrier(barrierId, true);
-            openOrCloseBarrier(barrierId, false);
-        }
-        return isSubjectHasAccess;
     }
 
     private Result<Subject> getSubjectById(Integer id) {
@@ -341,7 +341,7 @@ public class DataProviderCsv implements IDataProvider {
         return result;
     }
 
-    private boolean openOrCloseBarrier(Integer barrierId, boolean flag) {
+    private void openOrCloseBarrier(Integer barrierId, boolean flag) {
         log.info("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
         try {
             FileReader fileReader = new FileReader(barriersFilePath);
@@ -352,13 +352,11 @@ public class DataProviderCsv implements IDataProvider {
                 if (records[0].equals(String.valueOf(barrierId))) {
                     log.info("openOrCloseBarrier [2]: barrier has found");
                     updateBarrierStatus(barrierId, flag);
-                    return true;
                 }
             }
         } catch (CsvRequiredFieldEmptyException | CsvValidationException | IOException | CsvDataTypeMismatchException e) {
             log.error("openOrCloseBarrier [3]: error = {}", e.getMessage());
         }
-        return false;
     }
 
     private void updateBarrierStatus(Integer barrierId, boolean flag) throws IOException, CsvValidationException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException {
