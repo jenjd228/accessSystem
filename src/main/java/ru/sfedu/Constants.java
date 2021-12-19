@@ -74,9 +74,16 @@ public class Constants {
     public static final String SQL_TABLE_NAME_ACCESS_BARRIER = "accessBarrier";
     public static final String SQL_TABLE_NAME_MOTION = "motion";
     public static final String SQL_TABLE_NAME_BARRIER = "barrier";
+
     public static final String SQL_TABLE_CREATE_SUBJECT = "CREATE TABLE IF NOT EXISTS ".concat(SQL_TABLE_NAME_SUBJECT).concat("(").concat(KEY_ID).concat(" INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,").concat(KEY_TYPE).concat(" VARCHAR(20),").concat(KEY_NAME).concat(" VARCHAR(25),").concat(KEY_PASSWORD).concat(" VARCHAR(25),").concat(KEY_LOGIN).concat(" VARCHAR(25),").concat(KEY_SURNAME).concat(" VARCHAR(25),").concat(KEY_PATRONYMIC).concat(" VARCHAR(25),").concat(KEY_EMAIL).concat(" VARCHAR(35),".concat(KEY_COLOR).concat(" VARCHAR(20),").concat(KEY_NUMBER).concat(" VARCHAR(20))"));
     public static final String SQL_TABLE_CREATE_HISTORY = "CREATE TABLE IF NOT EXISTS ".concat(SQL_TABLE_NAME_HISTORY).concat("(").concat(KEY_ID).concat(" INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,").concat(KEY_SUBJECT_ID).concat(" BIGINT NOT NULL,").concat(KEY_DATE).concat(" BIGINT NOT NULL)");
     public static final String SQL_TABLE_CREATE_ACCESS_BARRIER = "CREATE TABLE IF NOT EXISTS ".concat(SQL_TABLE_NAME_ACCESS_BARRIER).concat("(").concat(KEY_ID).concat(" INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,").concat(KEY_SUBJECT_ID).concat(" INTEGER NOT NULL,").concat(KEY_BARRIER_ID).concat(" INTEGER NOT NULL,".concat(KEY_DATE).concat(" BIGINT NOT NULL)"));
     public static final String SQL_TABLE_CREATE_MOTION = "CREATE TABLE IF NOT EXISTS ".concat(SQL_TABLE_NAME_MOTION).concat("(").concat(KEY_ID).concat(" INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,").concat(KEY_BARRIER_ID).concat(" INTEGER NOT NULL,").concat(KEY_HISTORY_ID).concat(" INTEGER NOT NULL,").concat(KEY_MOVE_TYPE).concat(" VARCHAR(20))");
     public static final String SQL_TABLE_CREATE_BARRIER = "CREATE TABLE IF NOT EXISTS ".concat(SQL_TABLE_NAME_BARRIER).concat("(").concat(KEY_ID).concat(" INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,").concat(KEY_BARRIER_FLOOR).concat(" INTEGER NOT NULL,").concat(KEY_IS_OPEN).concat(" BOOLEAN NOT NULL)");
+
+    public static final String SELECT_SUBJECT_BY_ID = String.format("SELECT * FROM %s WHERE %s ",SQL_TABLE_NAME_SUBJECT,KEY_ID).concat(" = %d");
+
+    public static final String INSERT_SUBJECT = String.format("INSERT INTO %s (%s,%s,%s,%s,%s,%s,%s,%s,%s) ",SQL_TABLE_NAME_SUBJECT,KEY_TYPE,KEY_NAME,KEY_PASSWORD,KEY_LOGIN,KEY_SURNAME,KEY_PATRONYMIC,KEY_EMAIL,KEY_COLOR,KEY_NUMBER).concat("VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')");
+
+    public static final String UPDATE_SUBJECT = "UPDATE ".concat(SQL_TABLE_NAME_SUBJECT).concat(" set ").concat(KEY_TYPE).concat(" = '%s',").concat(KEY_NAME).concat(" = '%s',").concat(KEY_PASSWORD).concat(" = '%s',").concat(KEY_LOGIN).concat(" = '%s',").concat(KEY_SURNAME).concat(" = '%s',").concat(KEY_PATRONYMIC).concat(" = '%s',").concat(KEY_EMAIL).concat(" = '%s',").concat(KEY_COLOR).concat(" = '%s',").concat(KEY_NUMBER).concat(" = '%s' WHERE ").concat(KEY_ID).concat(" = %d");
 }

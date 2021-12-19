@@ -22,8 +22,8 @@ public class Main {
     public static void main(String[] args) {
         Animal animal = new Animal();
         animal.setType(SubjectType.ANIMAL);
-        animal.setColor("Red");
-        animal.setName("Dog");
+        animal.setColor("Redd");
+        animal.setName("DogDog");
 
         Transport transport = new Transport();
         transport.setType(SubjectType.TRANSPORT);
@@ -44,20 +44,31 @@ public class Main {
         human.setPatronymic("MaxPatronymic");
 
         /*DataProviderXml dataProviderXml = new DataProviderXml();
-        dataProviderXml.barrierRegistration(3);*/
-
-        /*DataProviderXml dataProviderXml = new DataProviderXml();
         dataProviderXml.gateAction(1,1,MoveType.OUT);*/
 
-        /*try {
+        printSubjectData();
+
+        DataProviderH2 dataProviderH2 = new DataProviderH2();
+        dataProviderH2.subjectRegistration(animal);
+
+        printSubjectData();
+    }
+
+    private static void printSubjectData() {
+        try {
             Class.forName(getConfigurationEntry(Constants.H2_DRIVER)).getDeclaredConstructor().newInstance();
             Connection connection = DriverManager.getConnection(
-                    getConfigurationEntry(Constants.H2_CONNECTOR).concat(Constants.H2_PATH_FOLDER).concat(Constants.H2_DB_NAME),
+                    getConfigurationEntry(Constants.H2_CONNECTOR).concat("./").concat(Constants.H2_PATH_FOLDER).concat(Constants.H2_DB_NAME),
                     getConfigurationEntry(Constants.H2_LOGIN),
                     getConfigurationEntry(Constants.H2_PASSWORD));
+
+            ResultSet resultSet = connection.createStatement().executeQuery("select * from subject");
+            while (resultSet.next()) {
+                System.out.println(resultSet.getString("name"));
+            }
             connection.close();
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
+        }
     }
 }

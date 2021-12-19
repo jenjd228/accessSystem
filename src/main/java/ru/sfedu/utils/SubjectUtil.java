@@ -174,10 +174,10 @@ public class SubjectUtil {
         return transport;
     }
 
-    public static Subject createAnimal(Integer id, String nickName, String color) {
+    public static Subject createAnimal(Integer id, String name, String color) {
         Animal animal = new Animal();
         setCommonFields(animal, id, SubjectType.ANIMAL);
-        animal.setName(nickName);
+        animal.setName(name);
         animal.setColor(color);
         return animal;
     }
