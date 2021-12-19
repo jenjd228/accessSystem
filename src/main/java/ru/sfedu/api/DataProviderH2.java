@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 import static ru.sfedu.utils.SubjectUtil.*;
 import static ru.sfedu.utils.TImeUtil.getCurrentUtcTimeInMillis;
+import static ru.sfedu.utils.TImeUtil.getUtcTimeInMillis;
 
 public class DataProviderH2 implements IDataProvider {
 
@@ -100,7 +101,31 @@ public class DataProviderH2 implements IDataProvider {
 
     @Override
     public Result<Object> grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours) {
-        return null;
+        log.info("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        AccessBarrier accessBarrier = null;
+        Result<Object> result = new Result<>();
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            accessBarrier = createAccessBarrier(null, subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
+            Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
+            if (checkResult.getCode() == Constants.CODE_ACCESS) {
+                connection = connection();
+                statement = connection.createStatement();
+                statement.executeUpdate(String.format(Constants.INSERT_ACCESS_BARRIER, accessBarrier.getSubjectId(), accessBarrier.getBarrierId(), accessBarrier.getDate()));
+                result.setCode(Constants.CODE_ACCESS);
+            } else {
+                result.setCode(Constants.CODE_INVALID_DATA);
+                result.setResult(checkResult.getResult());
+            }
+        } catch (SQLException e) {
+            log.error("grantAccess [2]: error = {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+        } finally {
+            closeStatementAndConnection(connection,statement);
+        }
+        log.info("grantAccess [3]: access granted successfully = {}", accessBarrier);
+        return result;
     }
 
     @Override
@@ -112,6 +137,26 @@ public class DataProviderH2 implements IDataProvider {
             openOrCloseBarrier(barrierId, false);
         }
         return isSubjectHasAccess;
+    }
+
+    private Result<TreeMap<String, String>> checkForExistenceSubjectAndBarrier(Integer subjectId, Integer barrierId) {
+        Result<Subject> subjectResult = getSubjectById(subjectId);
+        Result<Barrier> barrierResult = getBarrierById(barrierId);
+        Result<TreeMap<String, String>> result = new Result<>();
+        result.setCode(Constants.CODE_ACCESS);
+        TreeMap<String, String> errors = new TreeMap<>();
+
+        if (subjectResult.getCode() != Constants.CODE_ACCESS) {
+            errors.put(Constants.KEY_SUBJECT, Constants.NOT_FOUND_SUBJECT);
+            result.setCode(Constants.CODE_NOT_FOUND);
+        }
+
+        if (barrierResult.getCode() != Constants.CODE_ACCESS) {
+            errors.put(Constants.KEY_BARRIER, Constants.NOT_FOUND_BARRIER);
+            result.setCode(Constants.CODE_NOT_FOUND);
+        }
+        result.setResult(errors);
+        return result;
     }
 
     private void openOrCloseBarrier(Integer barrierId, boolean flag) {
@@ -210,6 +255,36 @@ public class DataProviderH2 implements IDataProvider {
         return result;
     }
 
+    private Result<Barrier> getBarrierById(Integer id) {
+        log.info("getBarrierById [1]: id = {}", id);
+        Result<Barrier> result = new Result<>();
+        result.setCode(Constants.CODE_NOT_FOUND);
+
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            connection = connection();
+            statement = connection.createStatement();
+
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_BARRIER_BY_ID, id));
+
+            if (resultSet.next()) {
+                result.setResult(createBarrier(id, resultSet.getInt(Constants.KEY_BARRIER_FLOOR), resultSet.getBoolean(Constants.KEY_IS_OPEN)));
+                result.setCode(Constants.CODE_ACCESS);
+            }
+
+        } catch (Exception e) {
+            log.error("getBarrierById [2]: {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+            result.setMessage(e.getMessage());
+        } finally {
+            closeStatementAndConnection(connection, statement);
+        }
+
+        log.info("getBarrierById [3]: result {}", result);
+        return result;
+    }
+
     private Result<History> createAndSaveHistory(Integer subjectId) {
         log.info("createAndSaveHistory [1]: subjectId = {}", subjectId);
         Result<History> result = new Result<>(null, Constants.CODE_ERROR, null);
@@ -219,12 +294,12 @@ public class DataProviderH2 implements IDataProvider {
             Statement statement = connection.createStatement();
             statement.executeUpdate(String.format(Constants.INSERT_HISTORY, history.getSubjectId(), history.getDate()));
             ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_HISTORY_BY_DATE_AND_SUBJECT_ID, history.getDate(), history.getSubjectId()));
-            if (resultSet.next()){
+            if (resultSet.next()) {
                 history.setId(Integer.parseInt(resultSet.getString(Constants.KEY_ID)));
                 result.setCode(Constants.CODE_ACCESS);
                 result.setResult(history);
                 log.info("createAndSaveHistory [2]: history = {}", history);
-            }else {
+            } else {
                 log.info("createAndSaveHistory [3]: history not found = {}", history);
             }
         } catch (Exception e) {

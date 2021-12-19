@@ -28,10 +28,6 @@ public class Main {
         transport.setNumber("number");
 
         Human human = new Human();
-        ArrayList<Integer> list = new ArrayList();
-        list.add(1);
-        list.add(2);
-        list.add(3);
         human.setType(SubjectType.USER);
         human.setEmail("ekocaba2@mail.ru");
         human.setLogin("jenjd22");
@@ -42,15 +38,6 @@ public class Main {
 
         /*DataProviderXml dataProviderXml = new DataProviderXml();
         dataProviderXml.gateAction(1,1,MoveType.OUT);*/
-
-        //printBarrierData();
-        //printMotionData();
-
-        DataProviderH2 dataProviderH2 = new DataProviderH2();
-        dataProviderH2.gateAction(1, 1, MoveType.OUT);
-
-        printMotionData();
-        printBarrierData();
     }
 
     private static void printSubjectData() {
@@ -117,7 +104,7 @@ public class Main {
 
             ResultSet resultSet = connection.createStatement().executeQuery("select * from ".concat(Constants.SQL_TABLE_NAME_ACCESS_BARRIER));
             while (resultSet.next()) {
-                System.out.println(resultSet.getString("id").concat(" ").concat(resultSet.getString("isOpen")));
+                System.out.println(resultSet.getString("id").concat(" ").concat(resultSet.getString("subjectId").concat(resultSet.getString("barrierId"))));
             }
             connection.close();
         } catch (Exception e) {
