@@ -15,6 +15,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
@@ -228,6 +230,36 @@ class DataProviderH2Test extends BaseTest {
 
         Assertions.assertEquals(expected, actual);
         log.info("grantAccessIfAllFound [4]: - test succeeded");
+    }
+
+    @Test
+    void getAllSubjectsIfNoSubjects() {
+        log.info("getAllSubjectsIfNoSubjects [1]: - test started");
+
+        List<Subject> actual = actualDataProviderH2.getAllUsers();
+        List<Subject> expected = new ArrayList<>();
+        log.info("getAllSubjectsIfNoSubjects [3]: actual data = {}", actual);
+        log.info("getAllSubjectsIfNoSubjects [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAllSubjectsIfNoSubjects [5]: - test succeeded");
+    }
+
+    @Test
+    void getAllSubjectsIfSubjectsExits() {
+        log.info("getAllSubjectsIfSubjectsExits [1]: - test started");
+
+        Animal animal = createAnimal(null, "Red", "animal");
+        actualDataProviderH2.subjectRegistration(animal);
+        List<Subject> actual = actualDataProviderH2.getAllUsers();
+        List<Subject> expected = new ArrayList<>();
+        animal.setId(1);
+        expected.add(animal);
+        log.info("getAllSubjectsIfSubjectsExits [3]: actual data = {}", actual);
+        log.info("getAllSubjectsIfSubjectsExits [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAllSubjectsIfSubjectsExits [5]: - test succeeded");
     }
 
     private void resetId(Statement statement, String dbName) {

@@ -11,6 +11,8 @@ import ru.sfedu.model.Subject;
 
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
@@ -275,5 +277,44 @@ class DataProviderXmlTest extends BaseTest {
 
         Assertions.assertEquals(expected, actual);
         log.info("grantAccessIfAllFound [4]: - test succeeded");
+    }
+
+    @Test
+    void getAllSubjectsIfNoSubjects(){
+        log.info("getAllSubjectsIfNoSubjects [1]: - test started");
+
+        try {
+            createFileIfNotExists(subjectsFilePath);
+        } catch (IOException e) {
+            log.error("getAllSubjectsIfNoSubjects [2]: error = {}", e.getMessage());
+        }
+        List<Subject> actual = actualDataProviderXml.getAllUsers();
+        List<Subject> expected = new ArrayList<>();
+        log.info("getAllSubjectsIfNoSubjects [3]: actual data = {}", actual);
+        log.info("getAllSubjectsIfNoSubjects [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAllSubjectsIfNoSubjects [5]: - test succeeded");
+    }
+
+    @Test
+    void getAllSubjectsIfSubjectsExits(){
+        log.info("getAllSubjectsIfSubjectsExits [1]: - test started");
+
+        try {
+            createFileIfNotExists(subjectsFilePath);
+        } catch (IOException e) {
+            log.error("getAllSubjectsIfSubjectsExits [2]: error = {}", e.getMessage());
+        }
+        Animal animal = createAnimal(null,"Red","animal");
+        actualDataProviderXml.subjectRegistration(animal);
+        List<Subject> actual = actualDataProviderXml.getAllUsers();
+        List<Subject> expected = new ArrayList<>();
+        expected.add(animal);
+        log.info("getAllSubjectsIfSubjectsExits [3]: actual data = {}", actual);
+        log.info("getAllSubjectsIfSubjectsExits [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAllSubjectsIfSubjectsExits [5]: - test succeeded");
     }
 }

@@ -7,6 +7,8 @@ import ru.sfedu.model.*;
 
 import java.sql.*;
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
@@ -141,6 +143,24 @@ public class DataProviderH2 implements IDataProvider {
             openOrCloseBarrier(barrierId, false);
         }
         return isSubjectHasAccess;
+    }
+
+    @Override
+    public List<Subject> getAllUsers() {
+        List<Subject> subjects = new ArrayList<>();
+        try {
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(Constants.SELECT_ALL_FROM_SUBJECT);
+            while (resultSet.next()) {
+                subjects.add(createSubject(resultSet));
+            }
+            statement.close();
+            connection.close();
+        } catch (SQLException e) {
+            log.error("getAllUsers [1]: error = {}", e.getMessage());
+        }
+        return subjects;
     }
 
     private Result<TreeMap<String, String>> checkForExistenceSubjectAndBarrier(Integer subjectId, Integer barrierId) {

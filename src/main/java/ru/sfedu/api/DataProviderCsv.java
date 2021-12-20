@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
@@ -51,7 +53,7 @@ public class DataProviderCsv implements IDataProvider {
         }
     }
 
-    public DataProviderCsv(String path,String mongoDbName) {
+    public DataProviderCsv(String path, String mongoDbName) {
         String mainFolder = path.concat(Constants.CSV_PATH_FOLDER);
         subjectsFilePath = mainFolder.concat(Constants.SUBJECT_FILENAME).concat(Constants.CSV_FILE_TYPE);
         accessBarriersFilePath = mainFolder.concat(Constants.ACCESSIBLE_BARRIERS_FILENAME).concat(Constants.CSV_FILE_TYPE);
@@ -92,7 +94,7 @@ public class DataProviderCsv implements IDataProvider {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
                 log.info("saveSubject [2]: There is the same subject {}", oldSubject);
-                MongoProvider.save(CommandType.UPDATED,RepositoryType.CSV,mongoDbName,oldSubject.getResult());
+                MongoProvider.save(CommandType.UPDATED, RepositoryType.CSV, mongoDbName, oldSubject.getResult());
                 result = saveModifySubject(subject);
             } else {
                 log.info("saveSubject [3]: There is no the same subject");
@@ -127,7 +129,7 @@ public class DataProviderCsv implements IDataProvider {
         Result<Object> result = new Result<>();
         try {
             accessBarrier = createAccessBarrier(getNewObjectId(accessBarriersFilePath), subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
-            Result<TreeMap<String,String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId,barrierId);
+            Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
             if (checkResult.getCode() == Constants.CODE_ACCESS) {
                 write(accessBarrier, accessBarriersFilePath, getAllObjectFields(accessBarrier));
                 result.setCode(Constants.CODE_ACCESS);
@@ -155,20 +157,43 @@ public class DataProviderCsv implements IDataProvider {
         return isSubjectHasAccess;
     }
 
-    private Result<TreeMap<String,String>> checkForExistenceSubjectAndBarrier(Integer subjectId, Integer barrierId) {
+    @Override
+    public List<Subject> getAllUsers() {
+        List<Subject> subjects = new ArrayList<>();
+        try {
+            FileReader fileReader = new FileReader(subjectsFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+
+            subjects = reader.readAll()
+                    .stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createSubject(records);
+                    }).toList();
+
+            fileReader.close();
+            reader.close();
+
+        } catch (Exception e) {
+            log.error("getAllUsers [2]: {}", e.getMessage());
+        }
+        return subjects;
+    }
+
+    private Result<TreeMap<String, String>> checkForExistenceSubjectAndBarrier(Integer subjectId, Integer barrierId) {
         Result<Subject> subjectResult = getSubjectById(subjectId);
         Result<Barrier> barrierResult = getBarrierById(barrierId);
-        Result<TreeMap<String,String>> result = new Result<>();
+        Result<TreeMap<String, String>> result = new Result<>();
         result.setCode(Constants.CODE_ACCESS);
-        TreeMap<String,String> errors = new TreeMap<>();
+        TreeMap<String, String> errors = new TreeMap<>();
 
-        if (subjectResult.getCode() != Constants.CODE_ACCESS){
-            errors.put(Constants.KEY_SUBJECT,Constants.NOT_FOUND_SUBJECT);
+        if (subjectResult.getCode() != Constants.CODE_ACCESS) {
+            errors.put(Constants.KEY_SUBJECT, Constants.NOT_FOUND_SUBJECT);
             result.setCode(Constants.CODE_NOT_FOUND);
         }
 
-        if (barrierResult.getCode() != Constants.CODE_ACCESS){
-            errors.put(Constants.KEY_BARRIER,Constants.NOT_FOUND_BARRIER);
+        if (barrierResult.getCode() != Constants.CODE_ACCESS) {
+            errors.put(Constants.KEY_BARRIER, Constants.NOT_FOUND_BARRIER);
             result.setCode(Constants.CODE_NOT_FOUND);
         }
         result.setResult(errors);
@@ -381,7 +406,7 @@ public class DataProviderCsv implements IDataProvider {
             barrier = createBarrier(Integer.valueOf(barStrings[0]), Integer.valueOf(barStrings[1]), false);
             if (barStrings[0].contains(records)) {
                 log.info("updateBarrierStatus [2]: barrier has found");
-                MongoProvider.save(CommandType.UPDATED,RepositoryType.CSV,mongoDbName,barrier);
+                MongoProvider.save(CommandType.UPDATED, RepositoryType.CSV, mongoDbName, barrier);
                 barrier.setOpen(flag);
             } else {
                 barrier.setOpen(Boolean.parseBoolean(barStrings[2]));

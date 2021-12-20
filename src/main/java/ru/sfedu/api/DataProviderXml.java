@@ -8,6 +8,8 @@ import ru.sfedu.utils.XmlUtil;
 
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -86,7 +88,7 @@ public class DataProviderXml implements IDataProvider {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
                 log.info("saveOrUpdateSubject [2]: There is the same subject {}", oldSubject);
-                MongoProvider.save(CommandType.UPDATED, RepositoryType.XML,mongoDbName,oldSubject.getResult());
+                MongoProvider.save(CommandType.UPDATED, RepositoryType.XML, mongoDbName, oldSubject.getResult());
                 result = saveModifySubject(subject);
             } else {
                 log.info("saveOrUpdateSubject [3]: There is no the same subject");
@@ -147,6 +149,18 @@ public class DataProviderXml implements IDataProvider {
             openOrCloseBarrier(barrierId, false);
         }
         return isSubjectHasAccess;
+    }
+
+    @Override
+    public List<Subject> getAllUsers() {
+        List<Subject> subjects = new ArrayList<>();
+        try {
+            Wrapper<Subject> wrapper = readFile(subjectsFilePath);
+            subjects = wrapper.getList();
+        } catch (Exception e) {
+            log.error("getAllUsers[1]: error = {}", e.getMessage());
+        }
+        return subjects;
     }
 
     private boolean openOrCloseBarrier(Integer barrierId, boolean flag) {

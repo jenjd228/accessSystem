@@ -11,6 +11,8 @@ import ru.sfedu.model.Subject;
 
 import java.io.IOException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
@@ -270,11 +272,50 @@ class DataProviderCsvTest extends BaseTest {
         actualDataProviderCsv.subjectRegistration(createAnimal(null, "Red", "animal"));
         Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1, 2025, 1, 1, 1);
         Result<Object> expected = new Result<>(null, Constants.CODE_ACCESS, null);
-        log.info("grantAccessIfAllFound [2]: actual data = {}", actual);
-        log.info("grantAccessIfAllFound [3]: expected data = {}", expected);
+        log.info("grantAccessIfAllFound [3]: actual data = {}", actual);
+        log.info("grantAccessIfAllFound [4]: expected data = {}", expected);
 
         Assertions.assertEquals(expected, actual);
-        log.info("grantAccessIfAllFound [4]: - test succeeded");
+        log.info("grantAccessIfAllFound [5]: - test succeeded");
+    }
+
+    @Test
+    void getAllSubjectsIfNoSubjects(){
+        log.info("getAllSubjectsIfNoSubjects [1]: - test started");
+
+        try {
+            createFileIfNotExists(subjectsFilePath);
+        } catch (IOException e) {
+            log.error("getAllSubjectsIfNoSubjects [2]: error = {}", e.getMessage());
+        }
+        List<Subject> actual = actualDataProviderCsv.getAllUsers();
+        List<Subject> expected = new ArrayList<>();
+        log.info("getAllSubjectsIfNoSubjects [3]: actual data = {}", actual);
+        log.info("getAllSubjectsIfNoSubjects [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAllSubjectsIfNoSubjects [5]: - test succeeded");
+    }
+
+    @Test
+    void getAllSubjectsIfSubjectsExits(){
+        log.info("getAllSubjectsIfSubjectsExits [1]: - test started");
+
+        try {
+            createFileIfNotExists(subjectsFilePath);
+        } catch (IOException e) {
+            log.error("getAllSubjectsIfSubjectsExits [2]: error = {}", e.getMessage());
+        }
+        Animal animal = createAnimal(null,"Red","animal");
+        actualDataProviderCsv.subjectRegistration(animal);
+        List<Subject> actual = actualDataProviderCsv.getAllUsers();
+        List<Subject> expected = new ArrayList<>();
+        expected.add(animal);
+        log.info("getAllSubjectsIfSubjectsExits [3]: actual data = {}", actual);
+        log.info("getAllSubjectsIfSubjectsExits [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAllSubjectsIfSubjectsExits [5]: - test succeeded");
     }
 
 }
