@@ -19,14 +19,17 @@ public class DataProviderH2 implements IDataProvider {
     private final Logger log = LogManager.getLogger(DataProviderXml.class.getName());
 
     private String h2PathFolder = "./";
+    private final String mongoDbName;
 
     public DataProviderH2() {
         h2PathFolder = h2PathFolder.concat(Constants.H2_PATH_FOLDER);
+        mongoDbName = getConfigurationEntry(Constants.MONGO_DB_NAME);
         createTables();
     }
 
-    public DataProviderH2(String path) {
+    public DataProviderH2(String path, String mongoDbName) {
         h2PathFolder = h2PathFolder.concat(path).concat(Constants.H2_PATH_FOLDER);
+        this.mongoDbName = mongoDbName;
         createTables();
     }
 
@@ -69,6 +72,7 @@ public class DataProviderH2 implements IDataProvider {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
                 log.info("saveOrUpdateSubject [2]: There is the same subject {}", oldSubject);
+                MongoProvider.save(CommandType.UPDATED, RepositoryType.H2, mongoDbName, oldSubject.getResult());
                 result = saveModifySubject(subject);
             } else {
                 log.info("saveOrUpdateSubject [3]: There is no the same subject");
@@ -122,7 +126,7 @@ public class DataProviderH2 implements IDataProvider {
             log.error("grantAccess [2]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
         } finally {
-            closeStatementAndConnection(connection,statement);
+            closeStatementAndConnection(connection, statement);
         }
         log.info("grantAccess [3]: access granted successfully = {}", accessBarrier);
         return result;
@@ -164,7 +168,8 @@ public class DataProviderH2 implements IDataProvider {
         try {
             Connection connection = connection();
             Statement statement = connection.createStatement();
-            int rowsUpdates = statement.executeUpdate(String.format(Constants.UPDATE_BARRIER_IS_OPEN, flag, barrierId));
+            saveOldBarrierInMongo(barrierId);
+            int rowsUpdates = statement.executeUpdate(String.format(Constants.UPDATE_BARRIER_IS_OPEN_BY_ID, flag, barrierId));
             if (rowsUpdates != 0) {
                 log.info("openOrCloseBarrier [2]: barrier has updated");
             } else {
@@ -173,6 +178,16 @@ public class DataProviderH2 implements IDataProvider {
             closeStatementAndConnection(connection, statement);
         } catch (SQLException e) {
             log.error("openOrCloseBarrier [3]: error = {}", e.getMessage());
+        }
+    }
+
+    private void saveOldBarrierInMongo(Integer barrierId) {
+        Result<Barrier> result = getBarrierById(barrierId);
+        if (result.getCode() == Constants.CODE_ACCESS) {
+            MongoProvider.save(CommandType.UPDATED, RepositoryType.H2, mongoDbName, result.getResult());
+            log.info("saveOldBarrierInMongo [1]: barrier has saved");
+        } else {
+            log.info("saveOldBarrierInMongo [2]: barrier has no saved");
         }
     }
 
@@ -322,7 +337,6 @@ public class DataProviderH2 implements IDataProvider {
 
     private Result<Object> saveModifySubject(Subject subject) throws SQLException {
         log.info("saveModifySubject [1] : {}", subject);
-
         Connection connection = connection();
         Statement statement = connection.createStatement();
         statement.executeUpdate(createSubjectUpdateString(subject));

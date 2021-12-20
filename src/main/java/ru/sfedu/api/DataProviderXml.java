@@ -11,6 +11,7 @@ import java.util.AbstractMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 import static ru.sfedu.utils.FileUtil.createFolderIfNotExists;
 import static ru.sfedu.utils.SubjectUtil.*;
@@ -27,6 +28,7 @@ public class DataProviderXml implements IDataProvider {
     private final String motionsFilePath;
     private final String historyFilePath;
     private final String barriersFilePath;
+    private final String mongoDbName;
 
     public DataProviderXml() {
         subjectsFilePath = Constants.XML_PATH_FOLDER.concat(Constants.SUBJECT_FILENAME).concat(Constants.XML_FILE_TYPE);
@@ -34,7 +36,7 @@ public class DataProviderXml implements IDataProvider {
         motionsFilePath = Constants.XML_PATH_FOLDER.concat(Constants.MOTIONS_FILENAME).concat(Constants.XML_FILE_TYPE);
         historyFilePath = Constants.XML_PATH_FOLDER.concat(Constants.HISTORY_FILENAME).concat(Constants.XML_FILE_TYPE);
         barriersFilePath = Constants.XML_PATH_FOLDER.concat(Constants.BARRIERS_FILENAME).concat(Constants.XML_FILE_TYPE);
-
+        mongoDbName = getConfigurationEntry(Constants.MONGO_DB_NAME);
         try {
             createFolderIfNotExists(Constants.XML_PATH_FOLDER);
             createCommonFiles();
@@ -43,13 +45,14 @@ public class DataProviderXml implements IDataProvider {
         }
     }
 
-    public DataProviderXml(String path) {
+    public DataProviderXml(String path, String mongoDbName) {
         String mainFolder = path.concat(Constants.XML_PATH_FOLDER);
         subjectsFilePath = mainFolder.concat(Constants.SUBJECT_FILENAME).concat(Constants.XML_FILE_TYPE);
         accessBarriersFilePath = mainFolder.concat(Constants.ACCESSIBLE_BARRIERS_FILENAME).concat(Constants.XML_FILE_TYPE);
         motionsFilePath = mainFolder.concat(Constants.MOTIONS_FILENAME).concat(Constants.XML_FILE_TYPE);
         historyFilePath = mainFolder.concat(Constants.HISTORY_FILENAME).concat(Constants.XML_FILE_TYPE);
         barriersFilePath = mainFolder.concat(Constants.BARRIERS_FILENAME).concat(Constants.XML_FILE_TYPE);
+        this.mongoDbName = mongoDbName;
 
         try {
             createFolderIfNotExists(mainFolder);
@@ -83,6 +86,7 @@ public class DataProviderXml implements IDataProvider {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
                 log.info("saveOrUpdateSubject [2]: There is the same subject {}", oldSubject);
+                MongoProvider.save(CommandType.UPDATED, RepositoryType.XML,mongoDbName,oldSubject.getResult());
                 result = saveModifySubject(subject);
             } else {
                 log.info("saveOrUpdateSubject [3]: There is no the same subject");
@@ -101,7 +105,7 @@ public class DataProviderXml implements IDataProvider {
         Barrier barrier;
         try {
             barrier = createBarrier(getNewObjectId(barriersFilePath), barrierFloor, false);
-            write(barriersFilePath, barrier);
+            write(barriersFilePath, barrier, mongoDbName);
         } catch (Exception e) {
             log.error("barrierRegistration [2]: error = {}", e.getMessage());
             return false;
@@ -119,7 +123,7 @@ public class DataProviderXml implements IDataProvider {
             accessBarrier = createAccessBarrier(getNewObjectId(accessBarriersFilePath), subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
             Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
             if (checkResult.getCode() == Constants.CODE_ACCESS) {
-                XmlUtil.write(accessBarriersFilePath, accessBarrier);
+                XmlUtil.write(accessBarriersFilePath, accessBarrier, mongoDbName);
                 result.setCode(Constants.CODE_ACCESS);
             } else {
                 result.setCode(Constants.CODE_INVALID_DATA);
@@ -218,9 +222,10 @@ public class DataProviderXml implements IDataProvider {
                 .findFirst()
                 .ifPresent(it -> {
                     log.info("updateBarrierStatus [2]: barrier has found");
+                    MongoProvider.save(CommandType.UPDATED, RepositoryType.XML, mongoDbName, it);
                     it.setOpen(flag);
                     try {
-                        XmlUtil.write(barriersFilePath, it);
+                        XmlUtil.write(barriersFilePath, it, mongoDbName);
                     } catch (Exception e) {
                         log.error("updateBarrierStatus [3]: error = {}", e.getMessage());
                     }
@@ -256,7 +261,7 @@ public class DataProviderXml implements IDataProvider {
 
         try {
             subject.setId(getNewObjectId(subjectsFilePath));
-            write(subjectsFilePath, subject);
+            write(subjectsFilePath, subject, mongoDbName);
         } catch (Exception ex) {
             new Result<>(ex.getMessage(), Constants.CODE_ERROR, null);
         }
@@ -268,7 +273,7 @@ public class DataProviderXml implements IDataProvider {
     private Result<Object> saveModifySubject(Subject subject) {
         log.info("saveModifyUser [1] : {}", subject);
         try {
-            write(subjectsFilePath, subject);
+            write(subjectsFilePath, subject, mongoDbName);
         } catch (Exception e) {
             log.error("saveModifyUser [3]: {}", e.getMessage());
             return new Result<>(e.getMessage(), Constants.CODE_ERROR, null);
@@ -309,7 +314,7 @@ public class DataProviderXml implements IDataProvider {
             Result<Integer> result = getHistoryIdForMotion(subjectId);
             if (result.getCode() == Constants.CODE_ACCESS) {
                 motion.setHistoryId(result.getResult());
-                write(motionsFilePath, motion);
+                write(motionsFilePath, motion, mongoDbName);
             } else {
                 log.info("motionRegistration [2]: history cannot be create");
             }
@@ -358,7 +363,7 @@ public class DataProviderXml implements IDataProvider {
         try {
             Integer newHistoryId = getNewObjectId(historyFilePath);
             History history = createHistory(subjectId, newHistoryId);
-            write(historyFilePath, history);
+            write(historyFilePath, history, mongoDbName);
             result.setCode(Constants.CODE_ACCESS);
             result.setResult(history);
             log.info("createAndSaveHistory [2]: history = {}", history);

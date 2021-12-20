@@ -3,6 +3,8 @@ package ru.sfedu;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.sfedu.api.DataProviderH2;
+import ru.sfedu.api.DataProviderXml;
+import ru.sfedu.api.MongoProvider;
 import ru.sfedu.model.*;
 
 import java.sql.Connection;
@@ -19,6 +21,7 @@ public class Main {
     public static void main(String[] args) {
         Animal animal = new Animal();
         animal.setType(SubjectType.ANIMAL);
+        animal.setId(1);
         animal.setColor("Redd");
         animal.setName("DogDog");
 
@@ -36,8 +39,10 @@ public class Main {
         human.setSurname("MaxSurname");
         human.setPatronymic("MaxPatronymic");
 
-        /*DataProviderXml dataProviderXml = new DataProviderXml();
-        dataProviderXml.gateAction(1,1,MoveType.OUT);*/
+        DataProviderXml dataProviderXml = new DataProviderXml();
+        dataProviderXml.subjectRegistration(animal);
+        //MongoProvider.save(CommandType.UPDATED,RepositoryType.CSV,Constants.MONGO_DB_NAME_FOR_TEST,new Barrier());
+
     }
 
     private static void printSubjectData() {

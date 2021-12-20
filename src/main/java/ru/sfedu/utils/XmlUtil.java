@@ -4,9 +4,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
-import ru.sfedu.model.OnlyId;
-import ru.sfedu.model.Subject;
-import ru.sfedu.model.Wrapper;
+import ru.sfedu.api.MongoProvider;
+import ru.sfedu.model.*;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -27,7 +26,7 @@ public class XmlUtil {
         return wrapper;
     }
 
-    public static <T extends OnlyId> void write(String filePath, T object) throws Exception {
+    public static <T extends OnlyId> void write(String filePath, T object,String mongoDbName) throws Exception {
         try {
             createFileIfNotExists(filePath);
         }catch (Exception e){
@@ -36,13 +35,13 @@ public class XmlUtil {
 
         Serializer serializer = new Persister();
         File file = new File(filePath);
-        Wrapper wrapper = new Wrapper();
+        Wrapper<OnlyId> wrapper = new Wrapper<>();
         try {
             boolean isFound = false;
             wrapper = serializer.read(Wrapper.class, file);
-            List list = wrapper.getList();
+            List<OnlyId> list = wrapper.getList();
             for (int i = 0;i < list.size();i++){
-                if (((OnlyId) list.get(i)).getId().equals(object.getId())){
+                if (list.get(i).getId().equals(object.getId())){
                     list.set(i,object);
                     isFound = true;
                     break;

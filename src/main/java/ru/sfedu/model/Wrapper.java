@@ -29,10 +29,6 @@ public class Wrapper<T> {
         this.list = list;
     }
 
-    public void addToList(T subject) {
-        list.add(subject);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

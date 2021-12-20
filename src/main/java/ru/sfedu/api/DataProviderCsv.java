@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.TreeMap;
 
+import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 import static ru.sfedu.utils.CsvUtil.getNewObjectId;
 import static ru.sfedu.utils.CsvUtil.write;
 import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
@@ -32,6 +33,7 @@ public class DataProviderCsv implements IDataProvider {
     private final String motionsFilePath;
     private final String historyFilePath;
     private final String barriersFilePath;
+    private final String mongoDbName;
 
     public DataProviderCsv() {
         subjectsFilePath = Constants.CSV_PATH_FOLDER.concat(Constants.SUBJECT_FILENAME).concat(Constants.CSV_FILE_TYPE);
@@ -39,6 +41,7 @@ public class DataProviderCsv implements IDataProvider {
         motionsFilePath = Constants.CSV_PATH_FOLDER.concat(Constants.MOTIONS_FILENAME).concat(Constants.CSV_FILE_TYPE);
         historyFilePath = Constants.CSV_PATH_FOLDER.concat(Constants.HISTORY_FILENAME).concat(Constants.CSV_FILE_TYPE);
         barriersFilePath = Constants.CSV_PATH_FOLDER.concat(Constants.BARRIERS_FILENAME).concat(Constants.CSV_FILE_TYPE);
+        mongoDbName = getConfigurationEntry(Constants.MONGO_DB_NAME);
 
         try {
             createFolderIfNotExists(Constants.CSV_PATH_FOLDER);
@@ -48,13 +51,14 @@ public class DataProviderCsv implements IDataProvider {
         }
     }
 
-    public DataProviderCsv(String path) {
+    public DataProviderCsv(String path,String mongoDbName) {
         String mainFolder = path.concat(Constants.CSV_PATH_FOLDER);
         subjectsFilePath = mainFolder.concat(Constants.SUBJECT_FILENAME).concat(Constants.CSV_FILE_TYPE);
         accessBarriersFilePath = mainFolder.concat(Constants.ACCESSIBLE_BARRIERS_FILENAME).concat(Constants.CSV_FILE_TYPE);
         motionsFilePath = mainFolder.concat(Constants.MOTIONS_FILENAME).concat(Constants.CSV_FILE_TYPE);
         historyFilePath = mainFolder.concat(Constants.HISTORY_FILENAME).concat(Constants.CSV_FILE_TYPE);
         barriersFilePath = mainFolder.concat(Constants.BARRIERS_FILENAME).concat(Constants.CSV_FILE_TYPE);
+        this.mongoDbName = mongoDbName;
 
         try {
             createFolderIfNotExists(mainFolder);
@@ -88,6 +92,7 @@ public class DataProviderCsv implements IDataProvider {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
                 log.info("saveSubject [2]: There is the same subject {}", oldSubject);
+                MongoProvider.save(CommandType.UPDATED,RepositoryType.CSV,mongoDbName,oldSubject.getResult());
                 result = saveModifySubject(subject);
             } else {
                 log.info("saveSubject [3]: There is no the same subject");
@@ -376,6 +381,7 @@ public class DataProviderCsv implements IDataProvider {
             barrier = createBarrier(Integer.valueOf(barStrings[0]), Integer.valueOf(barStrings[1]), false);
             if (barStrings[0].contains(records)) {
                 log.info("updateBarrierStatus [2]: barrier has found");
+                MongoProvider.save(CommandType.UPDATED,RepositoryType.CSV,mongoDbName,barrier);
                 barrier.setOpen(flag);
             } else {
                 barrier.setOpen(Boolean.parseBoolean(barStrings[2]));

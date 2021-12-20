@@ -35,7 +35,7 @@ class DataProviderCsvTest extends BaseTest {
         motionsFilePath = testPathFolder.concat(Constants.CSV_PATH_FOLDER).concat(Constants.MOTIONS_FILENAME).concat(Constants.CSV_FILE_TYPE);
         historyFilePath = testPathFolder.concat(Constants.CSV_PATH_FOLDER).concat(Constants.HISTORY_FILENAME).concat(Constants.CSV_FILE_TYPE);
         barriersFilePath = testPathFolder.concat(Constants.CSV_PATH_FOLDER).concat(Constants.BARRIERS_FILENAME).concat(Constants.CSV_FILE_TYPE);
-        actualDataProviderCsv = new DataProviderCsv(testPathFolder);
+        actualDataProviderCsv = new DataProviderCsv(testPathFolder, Constants.MONGO_DB_NAME_FOR_TEST);
     }
 
     @AfterAll
@@ -48,7 +48,7 @@ class DataProviderCsvTest extends BaseTest {
         deleteAllFiles();
     }
 
-    private static void deleteAllFiles(){
+    private static void deleteAllFiles() {
         deleteFileOrFolderIfExists(subjectsFilePath);
         deleteFileOrFolderIfExists(accessBarriersFilePath);
         deleteFileOrFolderIfExists(barriersFilePath);
@@ -130,8 +130,8 @@ class DataProviderCsvTest extends BaseTest {
         }
 
         actualDataProviderCsv.barrierRegistration(1);
-        actualDataProviderCsv.subjectRegistration(createAnimal(1,"Red","animal"));
-        actualDataProviderCsv.grantAccess(1,1,2025,1,1,1);
+        actualDataProviderCsv.subjectRegistration(createAnimal(1, "Red", "animal"));
+        actualDataProviderCsv.grantAccess(1, 1, 2025, 1, 1, 1);
         boolean actual = actualDataProviderCsv.gateAction(1, 1, MoveType.IN);
         log.info("gateActionIfHasAccess [2]: actual data = {}", actual);
         log.info("gateActionIfHasAccess [3]: expected data = {}", true);
@@ -153,7 +153,7 @@ class DataProviderCsvTest extends BaseTest {
         }
 
         actualDataProviderCsv.barrierRegistration(1);
-        actualDataProviderCsv.grantAccess(1,1,2020,1,1,1);
+        actualDataProviderCsv.grantAccess(1, 1, 2020, 1, 1, 1);
         boolean actual = actualDataProviderCsv.gateAction(1, 1, MoveType.IN);
         log.info("gateActionIfNoAccess [2]: actual data = {}", actual);
         log.info("gateActionIfNoAccess [3]: expected data = {}", false);
@@ -194,15 +194,15 @@ class DataProviderCsvTest extends BaseTest {
             log.error("grantAccessIfBarrierNotFound [2]: error = {}", e.getMessage());
         }
 
-        actualDataProviderCsv.subjectRegistration(createAnimal(null,"Red","animal"));
-        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1,2025,1,1,1);
-        TreeMap<String,String> errors = new TreeMap<>();
-        errors.put(Constants.KEY_BARRIER,Constants.NOT_FOUND_BARRIER);
-        Result<Object> expected = new Result<>(null,Constants.CODE_INVALID_DATA,errors);
+        actualDataProviderCsv.subjectRegistration(createAnimal(null, "Red", "animal"));
+        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1, 2025, 1, 1, 1);
+        TreeMap<String, String> errors = new TreeMap<>();
+        errors.put(Constants.KEY_BARRIER, Constants.NOT_FOUND_BARRIER);
+        Result<Object> expected = new Result<>(null, Constants.CODE_INVALID_DATA, errors);
         log.info("grantAccessIfBarrierNotFound [2]: actual data = {}", actual);
         log.info("grantAccessIfBarrierNotFound [3]: expected data = {}", expected);
 
-        Assertions.assertEquals(expected,actual);
+        Assertions.assertEquals(expected, actual);
         log.info("grantAccessIfBarrierNotFound [4]: - test succeeded");
     }
 
@@ -219,14 +219,14 @@ class DataProviderCsvTest extends BaseTest {
         }
 
         actualDataProviderCsv.barrierRegistration(2);
-        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1,2025,1,1,1);
-        TreeMap<String,String> errors = new TreeMap<>();
-        errors.put(Constants.KEY_SUBJECT,Constants.NOT_FOUND_SUBJECT);
-        Result<Object> expected = new Result<>(null,Constants.CODE_INVALID_DATA,errors);
+        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1, 2025, 1, 1, 1);
+        TreeMap<String, String> errors = new TreeMap<>();
+        errors.put(Constants.KEY_SUBJECT, Constants.NOT_FOUND_SUBJECT);
+        Result<Object> expected = new Result<>(null, Constants.CODE_INVALID_DATA, errors);
         log.info("grantAccessIfSubjectNotFound [2]: actual data = {}", actual);
         log.info("grantAccessIfSubjectNotFound [3]: expected data = {}", expected);
 
-        Assertions.assertEquals(expected,actual);
+        Assertions.assertEquals(expected, actual);
         log.info("grantAccessIfSubjectNotFound [4]: - test succeeded");
     }
 
@@ -242,15 +242,15 @@ class DataProviderCsvTest extends BaseTest {
             log.error("grantAccessIfSubjectAndBarrierNotFound [2]: error = {}", e.getMessage());
         }
 
-        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1,2025,1,1,1);
-        TreeMap<String,String> errors = new TreeMap<>();
-        errors.put(Constants.KEY_BARRIER,Constants.NOT_FOUND_BARRIER);
-        errors.put(Constants.KEY_SUBJECT,Constants.NOT_FOUND_SUBJECT);
-        Result<Object> expected = new Result<>(null,Constants.CODE_INVALID_DATA,errors);
+        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1, 2025, 1, 1, 1);
+        TreeMap<String, String> errors = new TreeMap<>();
+        errors.put(Constants.KEY_BARRIER, Constants.NOT_FOUND_BARRIER);
+        errors.put(Constants.KEY_SUBJECT, Constants.NOT_FOUND_SUBJECT);
+        Result<Object> expected = new Result<>(null, Constants.CODE_INVALID_DATA, errors);
         log.info("grantAccessIfSubjectAndBarrierNotFound [2]: actual data = {}", actual);
         log.info("grantAccessIfSubjectAndBarrierNotFound [3]: expected data = {}", expected);
 
-        Assertions.assertEquals(expected,actual);
+        Assertions.assertEquals(expected, actual);
         log.info("grantAccessIfSubjectAndBarrierNotFound [4]: - test succeeded");
     }
 
@@ -267,13 +267,13 @@ class DataProviderCsvTest extends BaseTest {
         }
 
         actualDataProviderCsv.barrierRegistration(1);
-        actualDataProviderCsv.subjectRegistration(createAnimal(null,"Red","animal"));
-        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1,2025,1,1,1);
-        Result<Object> expected = new Result<>(null,Constants.CODE_ACCESS,null);
+        actualDataProviderCsv.subjectRegistration(createAnimal(null, "Red", "animal"));
+        Result<Object> actual = actualDataProviderCsv.grantAccess(1, 1, 2025, 1, 1, 1);
+        Result<Object> expected = new Result<>(null, Constants.CODE_ACCESS, null);
         log.info("grantAccessIfAllFound [2]: actual data = {}", actual);
         log.info("grantAccessIfAllFound [3]: expected data = {}", expected);
 
-        Assertions.assertEquals(expected,actual);
+        Assertions.assertEquals(expected, actual);
         log.info("grantAccessIfAllFound [4]: - test succeeded");
     }
 

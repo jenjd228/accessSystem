@@ -22,6 +22,15 @@ public class Constants {
     public static final String XML_FILE_TYPE = ".xml";
     public static final String XML_PATH_FOLDER = "xml/";
 
+    public static final String MONGO_DB_NAME = "ru.sfedu.mongo.db.name";
+    public static final String MONGO_DB_NAME_FOR_TEST = "testDB";
+    public static final String MONGO_PORT = "ru.sfedu.mongo.port";
+    public static final String MONGO_HOST = "ru.sfedu.mongo.host";
+    public static final String MONGO_FIELD_TIME = "time";
+    public static final String MONGO_FIELD_COMMAND = "command";
+    public static final String MONGO_FIELD_REPOSITORY = "repository";
+    public static final String MONGO_FIELD_OBJECT = "item";
+
     public static final String SUBJECT_FILENAME = "subjects";
     public static final String ACCESSIBLE_BARRIERS_FILENAME = "accessibleBarriers";
     public static final String MOTIONS_FILENAME = "motions";
@@ -92,6 +101,6 @@ public class Constants {
     public static final String INSERT_BARRIER = String.format("INSERT INTO %s (%s,%s) ", SQL_TABLE_NAME_BARRIER, KEY_BARRIER_FLOOR, KEY_IS_OPEN).concat("VALUES('%d','%b')");
     public static final String INSERT_SUBJECT = String.format("INSERT INTO %s (%s,%s,%s,%s,%s,%s,%s,%s,%s) ", SQL_TABLE_NAME_SUBJECT, KEY_TYPE, KEY_NAME, KEY_PASSWORD, KEY_LOGIN, KEY_SURNAME, KEY_PATRONYMIC, KEY_EMAIL, KEY_COLOR, KEY_NUMBER).concat("VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')");
 
-    public static final String UPDATE_BARRIER_IS_OPEN = "UPDATE ".concat(SQL_TABLE_NAME_BARRIER).concat(" set ").concat(KEY_IS_OPEN).concat(" = '%b' WHERE ").concat(KEY_ID).concat(" = %d");
+    public static final String UPDATE_BARRIER_IS_OPEN_BY_ID = "UPDATE ".concat(SQL_TABLE_NAME_BARRIER).concat(" set ").concat(KEY_IS_OPEN).concat(" = '%b' WHERE ").concat(KEY_ID).concat(" = %d");
     public static final String UPDATE_SUBJECT = "UPDATE ".concat(SQL_TABLE_NAME_SUBJECT).concat(" set ").concat(KEY_TYPE).concat(" = '%s',").concat(KEY_NAME).concat(" = '%s',").concat(KEY_PASSWORD).concat(" = '%s',").concat(KEY_LOGIN).concat(" = '%s',").concat(KEY_SURNAME).concat(" = '%s',").concat(KEY_PATRONYMIC).concat(" = '%s',").concat(KEY_EMAIL).concat(" = '%s',").concat(KEY_COLOR).concat(" = '%s',").concat(KEY_NUMBER).concat(" = '%s' WHERE ").concat(KEY_ID).concat(" = %d");
 }
