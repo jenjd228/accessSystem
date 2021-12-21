@@ -2,15 +2,14 @@ package ru.sfedu;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.sfedu.api.DataProviderH2;
-import ru.sfedu.api.DataProviderXml;
-import ru.sfedu.api.MongoProvider;
-import ru.sfedu.model.*;
+import ru.sfedu.model.Animal;
+import ru.sfedu.model.Human;
+import ru.sfedu.model.SubjectType;
+import ru.sfedu.model.Transport;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 
@@ -21,7 +20,6 @@ public class Main {
     public static void main(String[] args) {
         Animal animal = new Animal();
         animal.setType(SubjectType.ANIMAL);
-        animal.setId(1);
         animal.setColor("Redd");
         animal.setName("DogDog");
 
@@ -38,11 +36,6 @@ public class Main {
         human.setName("Maxxx");
         human.setSurname("MaxSurname");
         human.setPatronymic("MaxPatronymic");
-
-        DataProviderXml dataProviderXml = new DataProviderXml();
-        dataProviderXml.subjectRegistration(animal);
-        //MongoProvider.save(CommandType.UPDATED,RepositoryType.CSV,Constants.MONGO_DB_NAME_FOR_TEST,new Barrier());
-
     }
 
     private static void printSubjectData() {

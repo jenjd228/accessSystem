@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.sfedu.Constants;
 import ru.sfedu.model.*;
+import ru.sfedu.utils.FileUtil;
 import ru.sfedu.utils.XmlUtil;
 
 import java.io.IOException;
@@ -19,7 +20,8 @@ import static ru.sfedu.utils.FileUtil.createFolderIfNotExists;
 import static ru.sfedu.utils.SubjectUtil.*;
 import static ru.sfedu.utils.TImeUtil.getCurrentUtcTimeInMillis;
 import static ru.sfedu.utils.TImeUtil.getUtcTimeInMillis;
-import static ru.sfedu.utils.XmlUtil.*;
+import static ru.sfedu.utils.XmlUtil.getNewObjectId;
+import static ru.sfedu.utils.XmlUtil.readFile;
 
 public class DataProviderXml implements IDataProvider {
 
@@ -107,7 +109,7 @@ public class DataProviderXml implements IDataProvider {
         Barrier barrier;
         try {
             barrier = createBarrier(getNewObjectId(barriersFilePath), barrierFloor, false);
-            write(barriersFilePath, barrier, mongoDbName);
+            XmlUtil.write(barriersFilePath, barrier);
         } catch (Exception e) {
             log.error("barrierRegistration [2]: error = {}", e.getMessage());
             return false;
@@ -125,7 +127,7 @@ public class DataProviderXml implements IDataProvider {
             accessBarrier = createAccessBarrier(getNewObjectId(accessBarriersFilePath), subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
             Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
             if (checkResult.getCode() == Constants.CODE_ACCESS) {
-                XmlUtil.write(accessBarriersFilePath, accessBarrier, mongoDbName);
+                XmlUtil.write(accessBarriersFilePath, accessBarrier);
                 result.setCode(Constants.CODE_ACCESS);
             } else {
                 result.setCode(Constants.CODE_INVALID_DATA);
@@ -163,6 +165,68 @@ public class DataProviderXml implements IDataProvider {
         return subjects;
     }
 
+    @Override
+    public Result<Subject> deleteSubjectById(Integer subjectId) {
+        log.info("deleteSubjectById[1]: subjectId = {}", subjectId);
+        Result<Subject> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
+        try {
+            Wrapper<Subject> wrapper = readFile(subjectsFilePath);
+            List<Subject> newList = wrapper.getList().stream()
+                    .filter(it -> {
+                        if (!it.getId().equals(subjectId)) {
+                            return true;
+                        } else {
+                            deleteAccessBarrierBySubjectId(it.getId());
+                            result.setCode(Constants.CODE_ACCESS);
+                            result.setResult(it);
+                            MongoProvider.save(CommandType.DELETED, RepositoryType.XML, mongoDbName, it);
+                            return false;
+                        }
+                    }).toList();
+            FileUtil.deleteFileOrFolderIfExists(subjectsFilePath);
+            createFileIfNotExists(subjectsFilePath);
+            newList.forEach(it -> {
+                try {
+                    XmlUtil.write(subjectsFilePath, it);
+                } catch (Exception e) {
+                    log.error("deleteSubjectById[2]: error = {}", e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            log.error("deleteSubjectById[3]: error = {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+        }
+        return result;
+    }
+
+    private void deleteAccessBarrierBySubjectId(Integer subjectId) {
+        log.info("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
+        try {
+            Wrapper<AccessBarrier> wrapper = readFile(accessBarriersFilePath);
+            List<AccessBarrier> newList = wrapper.getList().stream()
+                    .filter(it -> {
+                        if (!it.getSubjectId().equals(subjectId)) {
+                            return true;
+                        } else {
+                            log.info("deleteAccessBarrierBySubjectId [2]: deleted barrier = {}", it);
+                            MongoProvider.save(CommandType.DELETED, RepositoryType.XML, mongoDbName, it);
+                            return false;
+                        }
+                    }).toList();
+            FileUtil.deleteFileOrFolderIfExists(accessBarriersFilePath);
+            createFileIfNotExists(accessBarriersFilePath);
+            newList.forEach(it -> {
+                try {
+                    XmlUtil.write(accessBarriersFilePath, it);
+                } catch (Exception e) {
+                    log.error("deleteAccessBarrierBySubjectId[3]: error = {}", e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            log.error("deleteAccessBarrierBySubjectId [4]: error {}", e.getMessage());
+        }
+    }
+
     private boolean openOrCloseBarrier(Integer barrierId, boolean flag) {
         log.info("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
         AtomicBoolean isAccess = new AtomicBoolean(false);
@@ -181,7 +245,7 @@ public class DataProviderXml implements IDataProvider {
                         isAccess.set(true);
                     });
         } catch (Exception e) {
-            log.error("openOrCloseBarrier [3]: error = {}", e.getMessage());
+            log.error("openOrCloseBarrier [4]: error = {}", e.getMessage());
         }
         return isAccess.get();
     }
@@ -239,7 +303,7 @@ public class DataProviderXml implements IDataProvider {
                     MongoProvider.save(CommandType.UPDATED, RepositoryType.XML, mongoDbName, it);
                     it.setOpen(flag);
                     try {
-                        XmlUtil.write(barriersFilePath, it, mongoDbName);
+                        XmlUtil.write(barriersFilePath, it);
                     } catch (Exception e) {
                         log.error("updateBarrierStatus [3]: error = {}", e.getMessage());
                     }
@@ -275,7 +339,7 @@ public class DataProviderXml implements IDataProvider {
 
         try {
             subject.setId(getNewObjectId(subjectsFilePath));
-            write(subjectsFilePath, subject, mongoDbName);
+            XmlUtil.write(subjectsFilePath, subject);
         } catch (Exception ex) {
             new Result<>(ex.getMessage(), Constants.CODE_ERROR, null);
         }
@@ -287,7 +351,7 @@ public class DataProviderXml implements IDataProvider {
     private Result<Object> saveModifySubject(Subject subject) {
         log.info("saveModifyUser [1] : {}", subject);
         try {
-            write(subjectsFilePath, subject, mongoDbName);
+            XmlUtil.write(subjectsFilePath, subject);
         } catch (Exception e) {
             log.error("saveModifyUser [3]: {}", e.getMessage());
             return new Result<>(e.getMessage(), Constants.CODE_ERROR, null);
@@ -328,7 +392,7 @@ public class DataProviderXml implements IDataProvider {
             Result<Integer> result = getHistoryIdForMotion(subjectId);
             if (result.getCode() == Constants.CODE_ACCESS) {
                 motion.setHistoryId(result.getResult());
-                write(motionsFilePath, motion, mongoDbName);
+                XmlUtil.write(motionsFilePath, motion);
             } else {
                 log.info("motionRegistration [2]: history cannot be create");
             }
@@ -377,7 +441,7 @@ public class DataProviderXml implements IDataProvider {
         try {
             Integer newHistoryId = getNewObjectId(historyFilePath);
             History history = createHistory(subjectId, newHistoryId);
-            write(historyFilePath, history, mongoDbName);
+            XmlUtil.write(historyFilePath, history);
             result.setCode(Constants.CODE_ACCESS);
             result.setResult(history);
             log.info("createAndSaveHistory [2]: history = {}", history);

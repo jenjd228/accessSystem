@@ -3,7 +3,10 @@ package ru.sfedu.api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.sfedu.Constants;
+import ru.sfedu.model.Wrapper;
 import ru.sfedu.model.*;
+import ru.sfedu.utils.FileUtil;
+import ru.sfedu.utils.XmlUtil;
 
 import java.sql.*;
 import java.util.AbstractMap;
@@ -12,9 +15,11 @@ import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
+import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 import static ru.sfedu.utils.SubjectUtil.*;
 import static ru.sfedu.utils.TImeUtil.getCurrentUtcTimeInMillis;
 import static ru.sfedu.utils.TImeUtil.getUtcTimeInMillis;
+import static ru.sfedu.utils.XmlUtil.readFile;
 
 public class DataProviderH2 implements IDataProvider {
 
@@ -161,6 +166,48 @@ public class DataProviderH2 implements IDataProvider {
             log.error("getAllUsers [1]: error = {}", e.getMessage());
         }
         return subjects;
+    }
+
+    @Override
+    public Result<Subject> deleteSubjectById(Integer subjectId) {
+        log.info("deleteSubjectById[1]: subjectId = {}", subjectId);
+        Result<Subject> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
+        try {
+            Result<Subject> subjectResult = getSubjectById(subjectId);
+            if (subjectResult.getCode() == Constants.CODE_ACCESS) {
+                log.info("deleteSubjectById [2]: subject has found = {}", subjectResult.getResult());
+                result = subjectResult;
+                Connection connection = connection();
+                Statement statement = connection.createStatement();
+                statement.executeUpdate(String.format(Constants.DELETE_SUBJECT_BY_ID,subjectId));
+                deleteAccessBarrierBySubjectId(subjectId);
+                MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, result.getResult());
+                statement.close();
+                connection.close();
+                log.info("deleteSubjectById [3]: subject deleted");
+            }
+        } catch (Exception e) {
+            log.error("deleteSubjectById[4]: error = {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+        }
+        return result;
+    }
+
+    private void deleteAccessBarrierBySubjectId(Integer subjectId) {
+        log.info("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
+        try {
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_ACCESS_BARRIER_BY_SUBJECT_ID,subjectId));
+            while (resultSet.next()){
+                statement.executeUpdate(String.format(Constants.DELETE_ACCESS_BARRIERS_BY_ID,resultSet.getInt(Constants.KEY_ID)));
+                MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, createAccessBarrier(resultSet.getInt(Constants.KEY_ID),subjectId,resultSet.getInt(Constants.KEY_BARRIER_ID),resultSet.getLong(Constants.KEY_DATE)));
+            }
+            statement.close();
+            connection.close();
+        } catch (Exception e) {
+            log.error("deleteAccessBarrierBySubjectId [4]: error {}", e.getMessage());
+        }
     }
 
     private Result<TreeMap<String, String>> checkForExistenceSubjectAndBarrier(Integer subjectId, Integer barrierId) {

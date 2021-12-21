@@ -180,6 +180,111 @@ public class DataProviderCsv implements IDataProvider {
         return subjects;
     }
 
+    @Override
+    public Result<Subject> deleteSubjectById(Integer subjectId) {
+        log.info("deleteSubjectById [1]: subjectId = {}", subjectId);
+        Result<Subject> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
+        String newFilePath = subjectsFilePath.substring(0, subjectsFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
+        File oldFile = new File(subjectsFilePath);
+        File newFile = new File(newFilePath);
+        try {
+            FileReader fileReader = new FileReader(subjectsFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+
+            reader.readAll().stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createSubject(records);
+                    })
+                    .filter(it -> {
+                        if (!it.getId().equals(subjectId)) {
+                            return true;
+                        } else {
+                            result.setResult(it);
+                            result.setCode(Constants.CODE_ACCESS);
+                            deleteAccessBarrierBySubjectId(subjectId);
+                            MongoProvider.save(CommandType.DELETED, RepositoryType.CSV, mongoDbName, it);
+                            return false;
+                        }
+                    })
+                    .forEach(it -> {
+                        try {
+                            write(it, newFilePath, getAllSubjectFields(it));
+                        } catch (IOException | CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
+                            log.error("deleteSubjectById [2]: error {} ", e.getMessage());
+                        }
+                    });
+
+            fileReader.close();
+            reader.close();
+
+        } catch (Exception e) {
+            log.error("getSubjectById [3]: error {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+            result.setMessage(e.getMessage());
+        }
+
+        log.info("saveModifySubject [4] : New file {} written", newFilePath);
+
+        boolean isDeleted = oldFile.delete();
+        log.info("saveModifySubject [5] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+
+        boolean isRenamed = newFile.renameTo(oldFile);
+        log.info("saveModifySubject [6] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+
+        log.info("saveModifySubject [7] : subject modification is successful");
+        return result;
+    }
+
+    private void deleteAccessBarrierBySubjectId(Integer subjectId) {
+        log.info("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
+        String newFilePath = accessBarriersFilePath.substring(0, accessBarriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
+        File oldFile = new File(accessBarriersFilePath);
+        File newFile = new File(newFilePath);
+        try {
+            FileReader fileReader = new FileReader(accessBarriersFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+
+            reader.readAll().stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createAccessBarrier(Integer.parseInt(records[0]), Integer.parseInt(records[1]), Integer.parseInt(records[2]), Long.parseLong(records[3]));
+                    })
+                    .filter(it -> {
+                        if (!it.getSubjectId().equals(subjectId)) {
+                            return true;
+                        } else {
+                            log.info("deleteAccessBarrierBySubjectId [2]: deleted barrier = {}", it);
+                            MongoProvider.save(CommandType.DELETED, RepositoryType.CSV, mongoDbName, it);
+                            return false;
+                        }
+                    })
+                    .forEach(it -> {
+                        try {
+                            write(it, newFilePath, getAllObjectFields(it));
+                        } catch (IOException | CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
+                            log.error("deleteAccessBarrierBySubjectId [3]: error {} ", e.getMessage());
+                        }
+                    });
+
+            fileReader.close();
+            reader.close();
+
+        } catch (Exception e) {
+            log.error("deleteAccessBarrierBySubjectId [4]: error {}", e.getMessage());
+        }
+
+        log.info("deleteAccessBarrierBySubjectId [5] : New file {} written", newFilePath);
+
+        boolean isDeleted = oldFile.delete();
+        log.info("deleteAccessBarrierBySubjectId [6] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+
+        boolean isRenamed = newFile.renameTo(oldFile);
+        log.info("deleteAccessBarrierBySubjectId [7] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+
+        log.info("deleteAccessBarrierBySubjectId [8] : subject modification is successful");
+    }
+
     private Result<TreeMap<String, String>> checkForExistenceSubjectAndBarrier(Integer subjectId, Integer barrierId) {
         Result<Subject> subjectResult = getSubjectById(subjectId);
         Result<Barrier> barrierResult = getBarrierById(barrierId);
@@ -253,7 +358,7 @@ public class DataProviderCsv implements IDataProvider {
             reader.close();
 
         } catch (Exception e) {
-            log.error("getBarrierById [2]: {}", e.getMessage());
+            log.error("getBarrierById [2]: error {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
             result.setMessage(e.getMessage());
         }
@@ -330,7 +435,7 @@ public class DataProviderCsv implements IDataProvider {
             fileReader.close();
             reader.close();
         } catch (Exception e) {
-            log.error("checkPermission [4]: {}", e.getMessage());
+            log.error("checkPermission [4]: error {}", e.getMessage());
         }
         if (!isHasAccess) {
             log.info("checkPermission [5] subject has no an access or there is no such a barrier");
@@ -351,7 +456,7 @@ public class DataProviderCsv implements IDataProvider {
                 log.info("saveMotion [2]: history cannot be create");
             }
         } catch (Exception e) {
-            log.error("saveMotion [3]: {}", e.getMessage());
+            log.error("saveMotion [3]: error {}", e.getMessage());
         }
     }
 
@@ -455,7 +560,7 @@ public class DataProviderCsv implements IDataProvider {
             }
             log.info("getHistoryIdForMotion [4]: result = {}", result);
         } catch (Exception e) {
-            log.error("getHistoryIdForMotion [5]: {}", e.getMessage());
+            log.error("getHistoryIdForMotion [5]: error {}", e.getMessage());
         }
         return result;
     }

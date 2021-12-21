@@ -16,4 +16,6 @@ public interface IDataProvider {
     boolean gateAction(Integer subjectId, Integer barrierId, MoveType moveType);
 
     List<Subject> getAllUsers();
+
+    Result<Subject> deleteSubjectById(Integer subjectId);
 }
