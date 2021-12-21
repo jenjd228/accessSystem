@@ -317,4 +317,42 @@ class DataProviderXmlTest extends BaseTest {
         Assertions.assertEquals(expected, actual);
         log.info("getAllSubjectsIfSubjectsExits [5]: - test succeeded");
     }
+
+    @Test
+    void deleteSubjectIfExists(){
+        log.info("deleteSubjectIfExists [1]: - test started");
+
+        try {
+            createFileIfNotExists(subjectsFilePath);
+        } catch (IOException e) {
+            log.error("getAllSubjectsIfSubjectsExits [2]: error = {}", e.getMessage());
+        }
+        Animal animal = createAnimal(null,"Red","animal");
+        actualDataProviderXml.subjectRegistration(animal);
+        Result<Subject> actual = actualDataProviderXml.deleteSubjectById(1);
+        Result<Subject> expected = new Result<>(null,Constants.CODE_ACCESS,animal);
+        log.info("deleteSubjectIfExists [3]: actual data = {}", actual);
+        log.info("deleteSubjectIfExists [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteSubjectIfExists [5]: - test succeeded");
+    }
+
+    @Test
+    void deleteSubjectIfNotExists(){
+        log.info("deleteSubjectIfExists [1]: - test started");
+
+        try {
+            createFileIfNotExists(subjectsFilePath);
+        } catch (IOException e) {
+            log.error("getAllSubjectsIfSubjectsExits [2]: error = {}", e.getMessage());
+        }
+        Result<Subject> actual = actualDataProviderXml.deleteSubjectById(1);
+        Result<Subject> expected = new Result<>(null,Constants.CODE_NOT_FOUND,null);
+        log.info("deleteSubjectIfExists [3]: actual data = {}", actual);
+        log.info("deleteSubjectIfExists [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteSubjectIfExists [5]: - test succeeded");
+    }
 }

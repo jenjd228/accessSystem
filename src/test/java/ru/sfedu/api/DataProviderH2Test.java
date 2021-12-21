@@ -10,6 +10,7 @@ import ru.sfedu.model.Result;
 import ru.sfedu.model.Subject;
 import ru.sfedu.utils.FileUtil;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
+import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 
 class DataProviderH2Test extends BaseTest {
 
@@ -260,6 +262,35 @@ class DataProviderH2Test extends BaseTest {
 
         Assertions.assertEquals(expected, actual);
         log.info("getAllSubjectsIfSubjectsExits [5]: - test succeeded");
+    }
+
+    @Test
+    void deleteSubjectIfExists(){
+        log.info("deleteSubjectIfExists [1]: - test started");
+
+        Animal animal = createAnimal(null,"Red","animal");
+        actualDataProviderH2.subjectRegistration(animal);
+        animal.setId(1);
+        Result<Subject> actual = actualDataProviderH2.deleteSubjectById(1);
+        Result<Subject> expected = new Result<>(null,Constants.CODE_ACCESS,animal);
+        log.info("deleteSubjectIfExists [3]: actual data = {}", actual);
+        log.info("deleteSubjectIfExists [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteSubjectIfExists [5]: - test succeeded");
+    }
+
+    @Test
+    void deleteSubjectIfNotExists(){
+        log.info("deleteSubjectIfExists [1]: - test started");
+
+        Result<Subject> actual = actualDataProviderH2.deleteSubjectById(1);
+        Result<Subject> expected = new Result<>(null,Constants.CODE_NOT_FOUND,null);
+        log.info("deleteSubjectIfExists [3]: actual data = {}", actual);
+        log.info("deleteSubjectIfExists [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteSubjectIfExists [5]: - test succeeded");
     }
 
     private void resetId(Statement statement, String dbName) {

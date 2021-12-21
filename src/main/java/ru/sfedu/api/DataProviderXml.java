@@ -7,6 +7,7 @@ import ru.sfedu.model.*;
 import ru.sfedu.utils.FileUtil;
 import ru.sfedu.utils.XmlUtil;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -192,8 +193,10 @@ public class DataProviderXml implements IDataProvider {
                     log.error("deleteSubjectById[2]: error = {}", e.getMessage());
                 }
             });
-        } catch (Exception e) {
+        }catch (XMLStreamException e){
             log.error("deleteSubjectById[3]: error = {}", e.getMessage());
+        }catch (Exception e) {
+            log.error("deleteSubjectById[4]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
         }
         return result;
