@@ -4,12 +4,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.*;
 import ru.sfedu.Constants;
-import ru.sfedu.model.Animal;
-import ru.sfedu.model.MoveType;
-import ru.sfedu.model.Result;
-import ru.sfedu.model.Subject;
+import ru.sfedu.model.*;
 import ru.sfedu.utils.FileUtil;
+import ru.sfedu.utils.SubjectUtil;
+import ru.sfedu.utils.TImeUtil;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
+import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 
 class DataProviderH2Test extends BaseTest {
 
@@ -288,6 +289,98 @@ class DataProviderH2Test extends BaseTest {
 
         Assertions.assertEquals(expected, actual);
         log.info("deleteSubjectIfExists [5]: - test succeeded");
+    }
+
+    @Test
+    void getAllBarriersIfNoBarriers() {
+        log.info("getAllBarriersIfNoBarriers [1]: - test started");
+
+        List<Barrier> actual = actualDataProviderH2.getAllBarriers();
+        List<Barrier> expected = new ArrayList<>();
+        log.info("getAllBarriersIfNoBarriers [3]: actual data = {}", actual);
+        log.info("getAllBarriersIfNoBarriers [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAllBarriersIfNoBarriers [5]: - test succeeded");
+    }
+
+    @Test
+    void getAllBarriersIfBarriersExists() {
+        log.info("getAllBarriersIfBarriersExists [1]: - test started");
+
+        Barrier barrier = SubjectUtil.createBarrier(1,2,false);
+        actualDataProviderH2.barrierRegistration(2);
+        List<Barrier> actual = actualDataProviderH2.getAllBarriers();
+        List<Barrier> expected = new ArrayList<>();
+        expected.add(barrier);
+        log.info("getAllBarriersIfBarriersExists [3]: actual data = {}", actual);
+        log.info("getAllBarriersIfBarriersExists [4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAllBarriersIfBarriersExists [5]: - test succeeded");
+    }
+
+    @Test
+    void getAccessBarriersBySubjectIdIfAccessBarriersExists() {
+        log.info("getAccessBarriersBySubjectIdIfAccessBarriersExists[1]: - test started");
+
+        Animal animal = createAnimal(null, "Red", "animal");
+        AccessBarrier accessBarrier = SubjectUtil.createAccessBarrier(1, 1, 1, TImeUtil.getUtcTimeInMillis(2020,1,1,1));
+        actualDataProviderH2.barrierRegistration(2);
+        actualDataProviderH2.subjectRegistration(animal);
+        actualDataProviderH2.grantAccess(1,1,2020,1,1,1);
+        List<AccessBarrier> actual = actualDataProviderH2.getAccessBarriersBySubjectId(1);
+        List<AccessBarrier> expected = new ArrayList<>();
+        expected.add(accessBarrier);
+        log.info("getAccessBarriersBySubjectIdIfAccessBarriersExists[3]: actual data = {}", actual);
+        log.info("getAccessBarriersBySubjectIdIfAccessBarriersExists[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAccessBarriersBySubjectIdIfAccessBarriersExists[5]: - test succeeded");
+    }
+
+    @Test
+    void getAccessBarriersBySubjectIdIfNoAccessBarriers() {
+        log.info("getAccessBarriersBySubjectIdIfNoAccessBarriers[1]: - test started");
+
+        List<AccessBarrier> actual = actualDataProviderH2.getAccessBarriersBySubjectId(1);
+        List<AccessBarrier> expected = new ArrayList<>();
+        log.info("getAccessBarriersBySubjectIdIfNoAccessBarriers[3]: actual data = {}", actual);
+        log.info("getAccessBarriersBySubjectIdIfNoAccessBarriers[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getAccessBarriersBySubjectIdIfNoAccessBarriers[5]: - test succeeded");
+    }
+
+    @Test
+    void deleteAccessBarrierBySubjectAndBarrierIdIfNoExists() {
+        log.info("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[1]: - test started");
+
+        Result<AccessBarrier> actual = actualDataProviderH2.deleteAccessBarrierBySubjectAndBarrierId(1,1);
+        Result<AccessBarrier> expected = new Result<>(null, Constants.CODE_NOT_FOUND, null);
+        log.info("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[3]: actual data = {}", actual);
+        log.info("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[5]: - test succeeded");
+    }
+
+    @Test
+    void deleteAccessBarrierBySubjectAndBarrierIdIfExists() {
+        log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[1]: - test started");
+
+        Animal animal = createAnimal(null, "Red", "animal");
+        AccessBarrier accessBarrier = SubjectUtil.createAccessBarrier(1, 1, 1, TImeUtil.getUtcTimeInMillis(2020, 1, 1, 1));
+        actualDataProviderH2.barrierRegistration(2);
+        actualDataProviderH2.subjectRegistration(animal);
+        actualDataProviderH2.grantAccess(1, 1, 2020, 1, 1, 1);
+        Result<AccessBarrier> actual = actualDataProviderH2.deleteAccessBarrierBySubjectAndBarrierId(1,1);
+        Result<AccessBarrier> expected = new Result<>(null, Constants.CODE_ACCESS, accessBarrier);
+        log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[3]: actual data = {}", actual);
+        log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[5]: - test succeeded");
     }
 
     private void resetId(Statement statement, String dbName) {

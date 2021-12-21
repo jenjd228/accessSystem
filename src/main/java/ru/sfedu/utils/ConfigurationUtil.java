@@ -10,7 +10,7 @@ import java.util.Properties;
  * Configuration utility. Allows to get configuration properties from the
  * default configuration file
  *
- * @author Boris Jmailov
+ * @author Kotsaba Eugeny
  */
 public class ConfigurationUtil {
 
@@ -18,9 +18,6 @@ public class ConfigurationUtil {
     private static String configPath = "";
     private static final Properties configuration = new Properties();
 
-    /**
-     * Hides default constructor
-     */
     public ConfigurationUtil() {
 
     }
@@ -68,8 +65,7 @@ public class ConfigurationUtil {
      * Gets configuration entry value
      *
      * @param key Entry key
-     * @return Entry value by key
-     * @throws IOException In case of the configuration file read failure
+     * @return Entry value by key or nothing
      */
     public static String getConfigurationEntry(String key) {
         try {

@@ -167,6 +167,32 @@ public class DataProviderXml implements IDataProvider {
     }
 
     @Override
+    public List<AccessBarrier> getAccessBarriersBySubjectId(Integer subjectId) {
+        List<AccessBarrier> accessBarriers = new ArrayList<>();
+        try {
+            Wrapper<AccessBarrier> wrapper = readFile(accessBarriersFilePath);
+            accessBarriers = wrapper.getList().stream()
+                    .filter(it -> it.getSubjectId().equals(subjectId))
+                    .toList();
+        } catch (Exception e) {
+            log.error("getAccessBarriersBySubjectId[1]: error = {}", e.getMessage());
+        }
+        return accessBarriers;
+    }
+
+    @Override
+    public List<Barrier> getAllBarriers() {
+        List<Barrier> barriers = new ArrayList<>();
+        try {
+            Wrapper<Barrier> wrapper = readFile(barriersFilePath);
+            barriers = wrapper.getList();
+        } catch (Exception e) {
+            log.error("getAllBarriers[1]: error = {}", e.getMessage());
+        }
+        return barriers;
+    }
+
+    @Override
     public Result<Subject> deleteSubjectById(Integer subjectId) {
         log.info("deleteSubjectById[1]: subjectId = {}", subjectId);
         Result<Subject> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
@@ -194,9 +220,44 @@ public class DataProviderXml implements IDataProvider {
                 }
             });
         } catch (XMLStreamException e) {
-            log.error("deleteSubjectById[3]: error = {}", e.getMessage());
+            log.info("deleteSubjectById[3]: error = {}", e.getMessage());
         } catch (Exception e) {
             log.error("deleteSubjectById[4]: error = {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+        }
+        return result;
+    }
+
+    @Override
+    public Result<AccessBarrier> deleteAccessBarrierBySubjectAndBarrierId(Integer subjectId, Integer barrierId) {
+        log.info("deleteAccessBarrierBySubjectAndBarrierId[1]: subjectId = {}", subjectId);
+        Result<AccessBarrier> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
+        try {
+            Wrapper<AccessBarrier> wrapper = readFile(accessBarriersFilePath);
+            List<AccessBarrier> newList = wrapper.getList().stream()
+                    .filter(it -> {
+                        if (it.getSubjectId().equals(subjectId) && it.getBarrierId().equals(barrierId)) {
+                            result.setCode(Constants.CODE_ACCESS);
+                            result.setResult(it);
+                            MongoProvider.save(CommandType.DELETED, RepositoryType.XML, mongoDbName, it);
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }).toList();
+            FileUtil.deleteFileOrFolderIfExists(accessBarriersFilePath);
+            createFileIfNotExists(accessBarriersFilePath);
+            newList.forEach(it -> {
+                try {
+                    XmlUtil.write(accessBarriersFilePath, it);
+                } catch (Exception e) {
+                    log.error("deleteAccessBarrierBySubjectAndBarrierId[2]: error = {}", e.getMessage());
+                }
+            });
+        } catch (XMLStreamException e) {
+            log.info("deleteAccessBarrierBySubjectAndBarrierId[3]: error = {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("deleteAccessBarrierBySubjectAndBarrierId[4]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
         }
         return result;
@@ -327,10 +388,14 @@ public class DataProviderXml implements IDataProvider {
                         result.setResult(subject);
                         result.setCode(Constants.CODE_ACCESS);
                     });
+        } catch (XMLStreamException e) {
+            log.info("getSubjectById: {}", e.getMessage());
+            result.setMessage(e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
         } catch (Exception e) {
             log.error("getSubjectById: {}", e.getMessage());
-            result.setCode(Constants.CODE_ERROR);
             result.setMessage(e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
         }
 
         log.info("getSubjectById [2] : result {}", result);

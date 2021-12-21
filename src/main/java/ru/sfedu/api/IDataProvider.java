@@ -1,8 +1,6 @@
 package ru.sfedu.api;
 
-import ru.sfedu.model.MoveType;
-import ru.sfedu.model.Result;
-import ru.sfedu.model.Subject;
+import ru.sfedu.model.*;
 
 import java.util.List;
 
@@ -36,10 +34,10 @@ public interface IDataProvider {
      *
      * @param subjectId -  the id of a subject.
      * @param barrierId -  the id of a barrier.
-     * @param year  - the year until which access will be provided.
-     * @param month - the month until which access will be provided.
-     * @param day - the day until which access will be provided.
-     * @param hours - hours until which access will be provided.
+     * @param year      - the year until which access will be provided.
+     * @param month     - the month until which access will be provided.
+     * @param day       - the day until which access will be provided.
+     * @param hours     - hours until which access will be provided.
      * @return Result<Object> - an object that contains the result.
      **/
     Result<Object> grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours);
@@ -63,13 +61,37 @@ public interface IDataProvider {
     List<Subject> getAllUsers();
 
     /**
+     * Method that returns all AccessBarriers by subject id.
+     *
+     * @param subjectId - the id of a subject.
+     * @return List<AccessBarrier> - a list of accessBarriers.
+     **/
+    List<AccessBarrier> getAccessBarriersBySubjectId(Integer subjectId);
+
+    /**
+     * Method that returns all barriers in the system.
+     *
+     * @return List<Subject> - a list of barriers in the system.
+     **/
+    List<Barrier> getAllBarriers();
+
+    /**
      * Method that removes the user by id.
      * It removes and all the barriers accesses of subject.
      * If a subject is exists returns a Result with a 200 code and an object which was deleted.
      * If a subject is not exists returns a Result with a 404 code.
      *
      * @param subjectId - the id of a subject.
-     * @return Result<Subject> - an object that contains the result of the delete.
+     * @return Result<Subject> - an object that contains the result of delete.
      **/
     Result<Subject> deleteSubjectById(Integer subjectId);
+
+    /**
+     * Method that removes all accesses by subject and barrier id.
+     *
+     * @param subjectId - the id of a subject.
+     * @param barrierId - the id of a barrier.
+     * @return Result<AccessBarrier> - the last deleted AccessBarrier.
+     **/
+    Result<AccessBarrier> deleteAccessBarrierBySubjectAndBarrierId(Integer subjectId, Integer barrierId);
 }

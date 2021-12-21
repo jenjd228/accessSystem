@@ -181,6 +181,56 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     @Override
+    public List<AccessBarrier> getAccessBarriersBySubjectId(Integer subjectId) {
+        log.info("getAccessBarriersBySubjectId [1]: subjectId = {}", subjectId);
+        List<AccessBarrier> accessBarriers = new ArrayList<>();
+        try {
+            FileReader fileReader = new FileReader(accessBarriersFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+
+            accessBarriers = reader.readAll()
+                    .stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createAccessBarrier(Integer.parseInt(records[0]), Integer.parseInt(records[1]), Integer.parseInt(records[2]), Long.parseLong(records[3]));
+                    })
+                    .filter(it -> it.getSubjectId().equals(subjectId))
+                    .toList();
+
+            fileReader.close();
+            reader.close();
+
+        } catch (Exception e) {
+            log.error("getAllUsers [2]: {}", e.getMessage());
+        }
+        return accessBarriers;
+    }
+
+    @Override
+    public List<Barrier> getAllBarriers() {
+        List<Barrier> barriers = new ArrayList<>();
+        try {
+            FileReader fileReader = new FileReader(barriersFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+
+            barriers = reader.readAll()
+                    .stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createBarrier(Integer.parseInt(records[0]), Integer.parseInt(records[1]), Boolean.parseBoolean(records[2]));
+                    })
+                    .toList();
+
+            fileReader.close();
+            reader.close();
+
+        } catch (Exception e) {
+            log.error("getAllUsers [2]: {}", e.getMessage());
+        }
+        return barriers;
+    }
+
+    @Override
     public Result<Subject> deleteSubjectById(Integer subjectId) {
         log.info("deleteSubjectById [1]: subjectId = {}", subjectId);
         Result<Subject> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
@@ -202,7 +252,7 @@ public class DataProviderCsv implements IDataProvider {
                         } else {
                             result.setResult(it);
                             result.setCode(Constants.CODE_ACCESS);
-                            deleteAccessBarrierBySubjectId(subjectId);
+                            deleteAccessBarriersBySubjectId(subjectId);
                             MongoProvider.save(CommandType.DELETED, RepositoryType.CSV, mongoDbName, it);
                             return false;
                         }
@@ -236,7 +286,61 @@ public class DataProviderCsv implements IDataProvider {
         return result;
     }
 
-    private void deleteAccessBarrierBySubjectId(Integer subjectId) {
+    @Override
+    public Result<AccessBarrier> deleteAccessBarrierBySubjectAndBarrierId(Integer subjectId, Integer barrierId) {
+        log.info("deleteAccessBarrierBySubjectAndBarrierId [1]: subjectId = {},barrierId = {}", subjectId, barrierId);
+        String newFilePath = accessBarriersFilePath.substring(0, accessBarriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
+        Result<AccessBarrier> accessBarrierResult = new Result<>(null, Constants.CODE_NOT_FOUND, null);
+        File oldFile = new File(accessBarriersFilePath);
+        File newFile = new File(newFilePath);
+        try {
+            FileReader fileReader = new FileReader(accessBarriersFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+
+            reader.readAll().stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createAccessBarrier(Integer.parseInt(records[0]), Integer.parseInt(records[1]), Integer.parseInt(records[2]), Long.parseLong(records[3]));
+                    })
+                    .filter(it -> {
+                        if (it.getSubjectId().equals(subjectId) && it.getBarrierId().equals(barrierId)) {
+                            log.info("deleteAccessBarrierBySubjectAndBarrierId [2]: deleted barrier = {}", it);
+                            accessBarrierResult.setCode(Constants.CODE_ACCESS);
+                            accessBarrierResult.setResult(it);
+                            MongoProvider.save(CommandType.DELETED, RepositoryType.CSV, mongoDbName, it);
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    })
+                    .forEach(it -> {
+                        try {
+                            write(it, newFilePath, getAllObjectFields(it));
+                        } catch (IOException | CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
+                            log.error("deleteAccessBarrierBySubjectAndBarrierId [3]: error {} ", e.getMessage());
+                        }
+                    });
+
+            fileReader.close();
+            reader.close();
+
+        } catch (Exception e) {
+            log.error("deleteAccessBarrierBySubjectAndBarrierId [4]: error {}", e.getMessage());
+        }
+
+        log.info("deleteAccessBarrierBySubjectAndBarrierId [5] : New file {} written", newFilePath);
+
+        boolean isDeleted = oldFile.delete();
+        log.info("deleteAccessBarrierBySubjectAndBarrierId [6] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+
+        boolean isRenamed = newFile.renameTo(oldFile);
+        log.info("deleteAccessBarrierBySubjectAndBarrierId [7] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+
+        log.info("deleteAccessBarrierBySubjectAndBarrierId [8] : subject modification is successful");
+        return accessBarrierResult;
+    }
+
+    private void deleteAccessBarriersBySubjectId(Integer subjectId) {
         log.info("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
         String newFilePath = accessBarriersFilePath.substring(0, accessBarriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         File oldFile = new File(accessBarriersFilePath);

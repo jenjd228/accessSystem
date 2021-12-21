@@ -1,16 +1,23 @@
 package ru.sfedu;
 
+import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import ru.sfedu.api.DataProviderCsv;
+import ru.sfedu.api.DataProviderH2;
+import ru.sfedu.api.DataProviderXml;
 import ru.sfedu.model.Animal;
-import ru.sfedu.model.Human;
 import ru.sfedu.model.SubjectType;
-import ru.sfedu.model.Transport;
+import ru.sfedu.utils.ConfigurationUtil;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.util.Arrays;
 
+import static ru.sfedu.utils.ConfigurationUtil.getConfigPath;
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 
 public class Main {
@@ -18,24 +25,47 @@ public class Main {
     private static final Logger log = LogManager.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
+        /*CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine cmd = parser.parse(getAllOptions(), args);
+            if (cmd.hasOption("env")){
+                String[] arguments = cmd.getOptionValues("env");
+                ConfigurationUtil.setConfigPath(arguments[0]);
+            }
+            if (cmd.hasOption("log")){
+                String[] arguments = cmd.getOptionValues("log");
+                File file = new File(arguments[0]);
+                LoggerContext context = (LoggerContext) LogManager.getContext(false);
+                context.setConfigLocation(file.toURI());
+                log.info("WADAWDAWDAD");
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }*/
+
         Animal animal = new Animal();
+        animal.setColor("Red");
+        animal.setName("animal");
         animal.setType(SubjectType.ANIMAL);
-        animal.setColor("Redd");
-        animal.setName("DogDog");
+        DataProviderH2 dataProviderH2 = new DataProviderH2();
+        dataProviderH2.deleteAccessBarrierBySubjectAndBarrierId(1,1);
+        printAccessBarrierData();
+    }
 
-        Transport transport = new Transport();
-        transport.setType(SubjectType.TRANSPORT);
-        transport.setColor("Black");
-        transport.setNumber("number");
+    private static Options getAllOptions() {
+        Options options = new Options();
 
-        Human human = new Human();
-        human.setType(SubjectType.USER);
-        human.setEmail("ekocaba2@mail.ru");
-        human.setLogin("jenjd22");
-        human.setPassword("15032002K");
-        human.setName("Maxxx");
-        human.setSurname("MaxSurname");
-        human.setPatronymic("MaxPatronymic");
+        Option option = new Option("env", true, "Путь до файла environment.properties");
+        option.setArgs(1);
+        option.setOptionalArg(true);
+
+        Option option1 = new Option("log", true, "Путь до файла log4j2.xml");
+        option.setArgs(1);
+        option.setOptionalArg(true);
+
+        options.addOption(option);
+        options.addOption(option1);
+        return options;
     }
 
     private static void printSubjectData() {
