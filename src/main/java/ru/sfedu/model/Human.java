@@ -93,14 +93,14 @@ public class Human extends Subject {
     @Override
     public String toString() {
         return "Human{" +
-                "password='" + password + '\'' +
-                ", login='" + login + '\'' +
+                "id=" + id +
+                ", type=" + type +
                 ", name='" + name + '\'' +
                 ", surname='" + surname + '\'' +
                 ", patronymic='" + patronymic + '\'' +
+                ", password='" + password + '\'' +
+                ", login='" + login + '\'' +
                 ", email='" + email + '\'' +
-                ", id=" + id +
-                ", type=" + type +
                 '}';
     }
 }

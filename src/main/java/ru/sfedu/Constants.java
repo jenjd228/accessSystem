@@ -65,6 +65,19 @@ public class Constants {
     public static final String KEY_BARRIER_FLOOR = "barrierFloor";
     public static final String KEY_IS_OPEN = "isOpen";
 
+    public static final String CLI_ENVIRONMENT_PROPERTIES = "env";
+    public static final String CLI_LOG = "log";
+    public static final String CLI_NEW_ANIMAL = "na";
+    public static final String CLI_NEW_HUMAN = "nh";
+    public static final String CLI_NEW_TRANSPORT = "nt";
+    public static final String CLI_DATA_TYPE = "dType";
+    public static final String CLI_PRINT_SUBJECTS = "ps";
+    public static final String CLI_PRINT_BARRIERS = "pb";
+    public static final String CLI_NEW_BARRIER = "nb";
+    public static final String CLI_GRANT_ACCESS = "ga";
+    public static final String CLI_PRINT_SUBJECT_ACCESS = "psa";
+
+
     public static final String NOT_VALID_NAME = "Имя должно состоять из только букв латинского, длиною от 2 до 25 символов.";
     public static final String NOT_VALID_SURNAME = "Фамилия должна состоять из только букв латинского, длиною от 2 до 25 символов.";
     public static final String NOT_VALID_PATRONYMIC = "Отчество должно состоять из только букв латинского алфавита, длиною от 0 до 25 символов.";

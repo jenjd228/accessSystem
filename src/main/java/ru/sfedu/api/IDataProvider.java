@@ -14,7 +14,7 @@ public interface IDataProvider {
      * If a subject is not valid returns a Result with a 422 code and a pair that consists of an object and errors.
      *
      * @param subject - the object to be saved.
-     * @return Result<Object> - an object that contains the result of the save.
+     * @return an object that contains the result of the save.
      **/
     Result<Object> subjectRegistration(Subject subject);
 
@@ -22,13 +22,13 @@ public interface IDataProvider {
      * Method for registering a barrier in the system
      *
      * @param barrierFloor - the floor of barrier.
-     * @return boolean - a value indicating whether a barrier was created
+     * @return a value indicating whether a barrier was created
      **/
     boolean barrierRegistration(Integer barrierFloor);
 
     /**
      * Method of granting access to a subject if a subject and a barrier exist.
-     * If the barrier or the subject are exist it returns result with 200 code.
+     * If the barrier and the subject are exist it returns result with 200 code.
      * If the barrier or the subject are not exist it returns 422 code and
      * tree map of errors where key is 'barrier' or 'subject' and value is an error description.
      *
@@ -38,7 +38,7 @@ public interface IDataProvider {
      * @param month     - the month until which access will be provided.
      * @param day       - the day until which access will be provided.
      * @param hours     - hours until which access will be provided.
-     * @return Result<Object> - an object that contains the result.
+     * @return an object that contains the result.
      **/
     Result<Object> grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours);
 
@@ -56,7 +56,7 @@ public interface IDataProvider {
     /**
      * Method that returns all users in the system.
      *
-     * @return List<Subject> - a list of subjects in the system.
+     * @return a list of subjects in the system.
      **/
     List<Subject> getAllUsers();
 
@@ -64,14 +64,14 @@ public interface IDataProvider {
      * Method that returns all AccessBarriers by subject id.
      *
      * @param subjectId - the id of a subject.
-     * @return List<AccessBarrier> - a list of accessBarriers.
+     * @return a list of accessBarriers.
      **/
     List<AccessBarrier> getAccessBarriersBySubjectId(Integer subjectId);
 
     /**
      * Method that returns all barriers in the system.
      *
-     * @return List<Subject> - a list of barriers in the system.
+     * @return a list of barriers in the system.
      **/
     List<Barrier> getAllBarriers();
 
@@ -82,7 +82,7 @@ public interface IDataProvider {
      * If a subject is not exists returns a Result with a 404 code.
      *
      * @param subjectId - the id of a subject.
-     * @return Result<Subject> - an object that contains the result of delete.
+     * @return an object that contains the result of delete.
      **/
     Result<Subject> deleteSubjectById(Integer subjectId);
 
@@ -91,7 +91,7 @@ public interface IDataProvider {
      *
      * @param subjectId - the id of a subject.
      * @param barrierId - the id of a barrier.
-     * @return Result<AccessBarrier> - the last deleted AccessBarrier.
+     * @return the last deleted AccessBarrier.
      **/
     Result<AccessBarrier> deleteAccessBarrierBySubjectAndBarrierId(Integer subjectId, Integer barrierId);
 }

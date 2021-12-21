@@ -49,10 +49,10 @@ public class Animal extends Subject {
     @Override
     public String toString() {
         return "Animal{" +
-                "nickName='" + name + '\'' +
-                ", color='" + color + '\'' +
-                ", id=" + id +
+                "id=" + id +
                 ", type=" + type +
+                ", nickName='" + name + '\'' +
+                ", color='" + color + '\'' +
                 '}';
     }
 }
