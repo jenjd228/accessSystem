@@ -23,10 +23,10 @@ public class MongoProvider {
 
     private static final Logger logger = LogManager.getLogger(MongoProvider.class.getName());
 
-    public static <T> void save(CommandType command, RepositoryType repositoryType,String bdName, T obj) {
-        logger.info("save [1]: command = {}, type = {}, object = {}, dbName = {}", command, repositoryType, obj,bdName);
+    public static <T> void save(CommandType command, RepositoryType repositoryType, String bdName, T obj) {
+        logger.info("save [1]: command = {}, type = {}, object = {}, dbName = {}", command, repositoryType, obj, bdName);
         try {
-            MongoCollection<Document> collection = getCollection(obj.getClass(),bdName);
+            MongoCollection<Document> collection = getCollection(obj.getClass(), bdName);
 
             Document document = new Document();
             document.put(Constants.MONGO_FIELD_TIME, new Date());
@@ -39,7 +39,7 @@ public class MongoProvider {
         }
     }
 
-    private static <T> MongoCollection<Document> getCollection(Class<T> clazz,String bdName) {
+    private static <T> MongoCollection<Document> getCollection(Class<T> clazz, String bdName) {
         MongoClient mongoClient = new MongoClient(
                 getConfigurationEntry(Constants.MONGO_HOST),
                 Integer.parseInt(getConfigurationEntry(Constants.MONGO_PORT)));

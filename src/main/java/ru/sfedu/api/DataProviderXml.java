@@ -193,9 +193,9 @@ public class DataProviderXml implements IDataProvider {
                     log.error("deleteSubjectById[2]: error = {}", e.getMessage());
                 }
             });
-        }catch (XMLStreamException e){
+        } catch (XMLStreamException e) {
             log.error("deleteSubjectById[3]: error = {}", e.getMessage());
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("deleteSubjectById[4]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
         }

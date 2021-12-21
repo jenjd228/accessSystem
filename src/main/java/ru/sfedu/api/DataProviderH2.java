@@ -3,10 +3,7 @@ package ru.sfedu.api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.sfedu.Constants;
-import ru.sfedu.model.Wrapper;
 import ru.sfedu.model.*;
-import ru.sfedu.utils.FileUtil;
-import ru.sfedu.utils.XmlUtil;
 
 import java.sql.*;
 import java.util.AbstractMap;
@@ -15,11 +12,9 @@ import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
-import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 import static ru.sfedu.utils.SubjectUtil.*;
 import static ru.sfedu.utils.TImeUtil.getCurrentUtcTimeInMillis;
 import static ru.sfedu.utils.TImeUtil.getUtcTimeInMillis;
-import static ru.sfedu.utils.XmlUtil.readFile;
 
 public class DataProviderH2 implements IDataProvider {
 

@@ -10,7 +10,6 @@ import ru.sfedu.model.Result;
 import ru.sfedu.model.Subject;
 import ru.sfedu.utils.FileUtil;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
-import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 
 class DataProviderH2Test extends BaseTest {
 
@@ -34,7 +32,6 @@ class DataProviderH2Test extends BaseTest {
     static void beforeAll() {
         String testPathFolder = Constants.TEST_MAIN_FOLDER_PATH;
         h2PathFolder = h2PathFolder.concat(testPathFolder).concat(Constants.H2_PATH_FOLDER);
-        ;
         actualDataProviderH2 = new DataProviderH2(testPathFolder, Constants.MONGO_DB_NAME_FOR_TEST);
     }
 
@@ -265,14 +262,14 @@ class DataProviderH2Test extends BaseTest {
     }
 
     @Test
-    void deleteSubjectIfExists(){
+    void deleteSubjectIfExists() {
         log.info("deleteSubjectIfExists [1]: - test started");
 
-        Animal animal = createAnimal(null,"Red","animal");
+        Animal animal = createAnimal(null, "Red", "animal");
         actualDataProviderH2.subjectRegistration(animal);
         animal.setId(1);
         Result<Subject> actual = actualDataProviderH2.deleteSubjectById(1);
-        Result<Subject> expected = new Result<>(null,Constants.CODE_ACCESS,animal);
+        Result<Subject> expected = new Result<>(null, Constants.CODE_ACCESS, animal);
         log.info("deleteSubjectIfExists [3]: actual data = {}", actual);
         log.info("deleteSubjectIfExists [4]: expected data = {}", expected);
 
@@ -281,11 +278,11 @@ class DataProviderH2Test extends BaseTest {
     }
 
     @Test
-    void deleteSubjectIfNotExists(){
+    void deleteSubjectIfNotExists() {
         log.info("deleteSubjectIfExists [1]: - test started");
 
         Result<Subject> actual = actualDataProviderH2.deleteSubjectById(1);
-        Result<Subject> expected = new Result<>(null,Constants.CODE_NOT_FOUND,null);
+        Result<Subject> expected = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         log.info("deleteSubjectIfExists [3]: actual data = {}", actual);
         log.info("deleteSubjectIfExists [4]: expected data = {}", expected);
 

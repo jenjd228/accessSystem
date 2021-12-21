@@ -4,8 +4,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
-import ru.sfedu.api.MongoProvider;
-import ru.sfedu.model.*;
+import ru.sfedu.model.OnlyId;
+import ru.sfedu.model.Wrapper;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -29,8 +29,8 @@ public class XmlUtil {
     public static <T extends OnlyId> void write(String filePath, T object) throws Exception {
         try {
             createFileIfNotExists(filePath);
-        }catch (Exception e){
-            log.error("write[1]: error = {}",e.getMessage());
+        } catch (Exception e) {
+            log.error("write[1]: error = {}", e.getMessage());
         }
 
         Serializer serializer = new Persister();
@@ -40,25 +40,25 @@ public class XmlUtil {
             boolean isFound = false;
             wrapper = serializer.read(Wrapper.class, file);
             List<OnlyId> list = wrapper.getList();
-            for (int i = 0;i < list.size();i++){
-                if (list.get(i).getId().equals(object.getId())){
-                    list.set(i,object);
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i).getId().equals(object.getId())) {
+                    list.set(i, object);
                     isFound = true;
                     break;
                 }
             }
-            if (!isFound){
+            if (!isFound) {
                 list.add(object);
             }
-        }catch (XMLStreamException e){
+        } catch (XMLStreamException e) {
             List list = new ArrayList<>();
             list.add(object);
             wrapper.setList(list);
         } catch (Exception e) {
-            log.error("write[2]: error = {}",e.getMessage());
+            log.error("write[2]: error = {}", e.getMessage());
         }
 
-        serializer.write(wrapper,file);
+        serializer.write(wrapper, file);
     }
 
     public static Integer getNewObjectId(String filepath) {

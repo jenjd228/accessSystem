@@ -11,7 +11,7 @@ public class TImeUtil {
         return calendar.getTimeInMillis();
     }
 
-    public static Long getUtcTimeInMillis(Integer year, Integer month, Integer day, Integer hours){
+    public static Long getUtcTimeInMillis(Integer year, Integer month, Integer day, Integer hours) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, month);
