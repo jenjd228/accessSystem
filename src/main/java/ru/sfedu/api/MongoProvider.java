@@ -1,10 +1,12 @@
 package ru.sfedu.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.jackson.Log4jJsonObjectMapper;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -26,12 +28,12 @@ public class MongoProvider {
         log.info("save [1]: command = {}, type = {}, object = {}, dbName = {}", command, repositoryType, obj, bdName);
         try {
             MongoCollection<Document> collection = getCollection(obj.getClass(), bdName);
-
+            ObjectMapper objectMapper = new ObjectMapper();
             Document document = new Document();
             document.put(Constants.MONGO_FIELD_TIME, new Date());
             document.put(Constants.MONGO_FIELD_COMMAND, command.toString());
             document.put(Constants.MONGO_FIELD_REPOSITORY, repositoryType.toString());
-            document.put(Constants.MONGO_FIELD_OBJECT, obj);
+            document.put(Constants.MONGO_FIELD_OBJECT, objectMapper.writeValueAsString(obj));
             collection.insertOne(document);
         } catch (Exception e) {
             log.error("save [2]: {}", e.getMessage());
