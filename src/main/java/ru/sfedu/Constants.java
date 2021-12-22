@@ -82,6 +82,37 @@ public class Constants {
     public static final String CLI_GATE_ACTION = "gac";
     public static final String CLI_HELP = "help";
 
+    public static final String CLI_ARGS_NAME_ENVIRONMENT_PROPERTIES = "filePath";
+    public static final String CLI_ARGS_NAME_LOG = "filePath";
+    public static final String CLI_ARGS_NAME_NEW_ANIMAL = "name color";
+    public static final String CLI_ARGS_NAME_NEW_HUMAN = "right name surname patronymic login password email";
+    public static final String CLI_ARGS_NAME_NEW_TRANSPORT = "number color";
+    public static final String CLI_ARGS_NAME_DATA_TYPE = "data_type";
+    public static final String CLI_ARGS_NAME_NEW_BARRIER = "floor";
+    public static final String CLI_ARGS_NAME_GRANT_ACCESS = "subject_id barrier_id year month day hours";
+    public static final String CLI_ARGS_NAME_DELETE_SUBJECT = "subject_id";
+    public static final String CLI_ARGS_NAME_PRINT_SUBJECT_ACCESS = "subject_id";
+    public static final String CLI_ARGS_NAME_DELETE_SUBJECT_ACCESS = "subject_id barrier_id";
+    public static final String CLI_ARGS_NAME_GATE_ACTION = "subject_id barrier_id move_type(IN,OUT)";
+    public static final String CLI_ARGS_NAME_PRINT_HISTORY = "subject_id";
+
+    public static final String CLI_DESCRIPTION_ENVIRONMENT_PROPERTIES = "Путь до файла environment.properties";
+    public static final String CLI_DESCRIPTION_LOG = "Путь до файла log4j2.xml";
+    public static final String CLI_DESCRIPTION_NEW_ANIMAL = "Создание нового пользователя (животное)";
+    public static final String CLI_DESCRIPTION_NEW_HUMAN = "Создание нового пользователя (человек)";
+    public static final String CLI_DESCRIPTION_NEW_TRANSPORT = "Создание нового пользователя (транспорт)";
+    public static final String CLI_DESCRIPTION_DATA_TYPE = "Указание типа данных(XML,H2,CSV) (по умолчанию h2)";
+    public static final String CLI_DESCRIPTION_PRINT_SUBJECTS = "Вывод информации о всех юзерах";
+    public static final String CLI_DESCRIPTION_PRINT_BARRIERS = "Вывод информации о всех барьерах";
+    public static final String CLI_DESCRIPTION_PRINT_HISTORY = "Вывод истории пользователя";
+    public static final String CLI_DESCRIPTION_NEW_BARRIER = "Регистрация барьера";
+    public static final String CLI_DESCRIPTION_GRANT_ACCESS = "Предоставление доступа к барьеру";
+    public static final String CLI_DESCRIPTION_PRINT_SUBJECT_ACCESS = "Вывод информации о правах данного пользователя";
+    public static final String CLI_DESCRIPTION_DELETE_SUBJECT = "Удаление пользователя и доступов связаных с ним";
+    public static final String CLI_DESCRIPTION_DELETE_SUBJECT_ACCESS = "Удаление доступа пользователя";
+    public static final String CLI_DESCRIPTION_GATE_ACTION = "Вход или выход через барьер";
+    public static final String CLI_DESCRIPTION_HELP = "Информация по использованию сервиса";
+
 
     public static final String NOT_VALID_NAME = "Имя должно состоять из только букв латинского, длиною от 2 до 25 символов.";
     public static final String NOT_VALID_SURNAME = "Фамилия должна состоять из только букв латинского, длиною от 2 до 25 символов.";

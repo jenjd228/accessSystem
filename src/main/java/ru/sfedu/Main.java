@@ -186,78 +186,78 @@ public class Main {
     private static Options getAllOptions() {
         Options options = new Options();
 
-        Option optionEnv = new Option(Constants.CLI_ENVIRONMENT_PROPERTIES, true, "Путь до файла environment.properties");
-        optionEnv.setArgName("filePath");
+        Option optionEnv = new Option(Constants.CLI_ENVIRONMENT_PROPERTIES, true, Constants.CLI_DESCRIPTION_ENVIRONMENT_PROPERTIES);
+        optionEnv.setArgName(Constants.CLI_ARGS_NAME_ENVIRONMENT_PROPERTIES);
         optionEnv.setArgs(1);
         optionEnv.setOptionalArg(true);
 
-        Option optionDataType = new Option(Constants.CLI_DATA_TYPE, true, "Указание типа данных(XML,H2,CSV) (по умолчанию h2)");
-        optionDataType.setArgName("data_type");
+        Option optionDataType = new Option(Constants.CLI_DATA_TYPE, true, Constants.CLI_DESCRIPTION_DATA_TYPE);
+        optionDataType.setArgName(Constants.CLI_ARGS_NAME_DATA_TYPE);
         optionDataType.setArgs(1);
         optionDataType.setOptionalArg(true);
 
-        Option optionLog = new Option(Constants.CLI_LOG, true, "Путь до файла log4j2.xml");
-        optionLog.setArgName("filePath");
+        Option optionLog = new Option(Constants.CLI_LOG, true, Constants.CLI_DESCRIPTION_LOG);
+        optionLog.setArgName(Constants.CLI_ARGS_NAME_LOG);
         optionLog.setArgs(1);
         optionLog.setOptionalArg(true);
 
-        Option optionAnimalRegistration = new Option(Constants.CLI_NEW_ANIMAL, true, "Создание нового пользователя (животное)");
-        optionAnimalRegistration.setArgName("name color");
+        Option optionAnimalRegistration = new Option(Constants.CLI_NEW_ANIMAL, true, Constants.CLI_DESCRIPTION_NEW_ANIMAL);
+        optionAnimalRegistration.setArgName(Constants.CLI_ARGS_NAME_NEW_ANIMAL);
         optionAnimalRegistration.setArgs(2);
         optionAnimalRegistration.setOptionalArg(true);
 
-        Option optionTransportRegistration = new Option(Constants.CLI_NEW_TRANSPORT, true, "Создание нового пользователя (транспорт)");
-        optionTransportRegistration.setArgName("number color");
+        Option optionTransportRegistration = new Option(Constants.CLI_NEW_TRANSPORT, true, Constants.CLI_DESCRIPTION_NEW_TRANSPORT);
+        optionTransportRegistration.setArgName(Constants.CLI_ARGS_NAME_NEW_TRANSPORT);
         optionTransportRegistration.setArgs(2);
         optionTransportRegistration.setOptionalArg(true);
 
-        Option optionHumanRegistration = new Option(Constants.CLI_NEW_HUMAN, true, "Создание нового пользователя (человек)");
-        optionHumanRegistration.setArgName("root name surname patronymic login password email");
+        Option optionHumanRegistration = new Option(Constants.CLI_NEW_HUMAN, true, Constants.CLI_DESCRIPTION_NEW_HUMAN);
+        optionHumanRegistration.setArgName(Constants.CLI_ARGS_NAME_NEW_HUMAN);
         optionHumanRegistration.setArgs(7);
         optionHumanRegistration.setOptionalArg(true);
 
-        Option optionPrintSubjects = new Option(Constants.CLI_PRINT_SUBJECTS, false, "Вывод информации о всех юзерах");
+        Option optionPrintSubjects = new Option(Constants.CLI_PRINT_SUBJECTS, false, Constants.CLI_DESCRIPTION_PRINT_SUBJECTS);
         optionPrintSubjects.setOptionalArg(true);
 
-        Option optionBarrierRegistration = new Option(Constants.CLI_NEW_BARRIER, true, "Регистрация барьера");
-        optionBarrierRegistration.setArgName("floor");
+        Option optionBarrierRegistration = new Option(Constants.CLI_NEW_BARRIER, true, Constants.CLI_DESCRIPTION_NEW_BARRIER);
+        optionBarrierRegistration.setArgName(Constants.CLI_ARGS_NAME_NEW_BARRIER);
         optionBarrierRegistration.setArgs(1);
         optionBarrierRegistration.setOptionalArg(true);
 
-        Option optionPrintBarrier = new Option(Constants.CLI_PRINT_BARRIERS, false, "Вывод информации о всех барьерах");
+        Option optionPrintBarrier = new Option(Constants.CLI_PRINT_BARRIERS, false, Constants.CLI_DESCRIPTION_PRINT_BARRIERS);
         optionPrintBarrier.setOptionalArg(true);
 
-        Option optionGrantAccess = new Option(Constants.CLI_GRANT_ACCESS, true, "Предоставление доступа к барьеру");
-        optionGrantAccess.setArgName("subject_id barrier_id year month day hours");
+        Option optionGrantAccess = new Option(Constants.CLI_GRANT_ACCESS, true, Constants.CLI_DESCRIPTION_GRANT_ACCESS);
+        optionGrantAccess.setArgName(Constants.CLI_ARGS_NAME_GRANT_ACCESS);
         optionGrantAccess.setArgs(6);
         optionGrantAccess.setOptionalArg(true);
 
-        Option optionPrintSubjectAccess = new Option(Constants.CLI_PRINT_SUBJECT_ACCESS, true, "Вывод информации о правах данного пользователя");
-        optionPrintSubjectAccess.setArgName("subject_id");
+        Option optionPrintSubjectAccess = new Option(Constants.CLI_PRINT_SUBJECT_ACCESS, true, Constants.CLI_DESCRIPTION_PRINT_SUBJECT_ACCESS);
+        optionPrintSubjectAccess.setArgName(Constants.CLI_ARGS_NAME_PRINT_SUBJECT_ACCESS);
         optionPrintSubjectAccess.setArgs(1);
         optionPrintSubjectAccess.setOptionalArg(true);
 
-        Option optionDeleteSubject = new Option(Constants.CLI_DELETE_SUBJECT, true, "Удаление пользователя и доступов связаных с ним");
-        optionDeleteSubject.setArgName("subject_id");
+        Option optionDeleteSubject = new Option(Constants.CLI_DELETE_SUBJECT, true, Constants.CLI_DESCRIPTION_DELETE_SUBJECT);
+        optionDeleteSubject.setArgName(Constants.CLI_ARGS_NAME_DELETE_SUBJECT);
         optionDeleteSubject.setArgs(1);
         optionDeleteSubject.setOptionalArg(true);
 
-        Option optionDeleteSubjectAccess = new Option(Constants.CLI_DELETE_SUBJECT_ACCESS, true, "Удаление доступа пользователя");
-        optionDeleteSubjectAccess.setArgName("subject_id barrier_id");
+        Option optionDeleteSubjectAccess = new Option(Constants.CLI_DELETE_SUBJECT_ACCESS, true, Constants.CLI_DESCRIPTION_DELETE_SUBJECT_ACCESS);
+        optionDeleteSubjectAccess.setArgName(Constants.CLI_ARGS_NAME_DELETE_SUBJECT_ACCESS);
         optionDeleteSubjectAccess.setArgs(2);
         optionDeleteSubjectAccess.setOptionalArg(true);
 
-        Option optionPrintHistory = new Option(Constants.CLI_PRINT_HISTORY, true, "Вывод истории пользователя");
-        optionPrintHistory.setArgName("subject_id");
+        Option optionPrintHistory = new Option(Constants.CLI_PRINT_HISTORY, true, Constants.CLI_DESCRIPTION_PRINT_HISTORY);
+        optionPrintHistory.setArgName(Constants.CLI_ARGS_NAME_PRINT_HISTORY);
         optionPrintHistory.setArgs(1);
         optionPrintHistory.setOptionalArg(true);
 
-        Option optionGateAction = new Option(Constants.CLI_GATE_ACTION, true, "Вход или выход через барьер");
-        optionGateAction.setArgName("subject_id barrier_id move_type(IN,OUT)");
+        Option optionGateAction = new Option(Constants.CLI_GATE_ACTION, true, Constants.CLI_DESCRIPTION_GATE_ACTION);
+        optionGateAction.setArgName(Constants.CLI_ARGS_NAME_GATE_ACTION);
         optionGateAction.setArgs(3);
         optionGateAction.setOptionalArg(true);
 
-        Option optionHelp = new Option(Constants.CLI_HELP, false, "Информация по использованию");
+        Option optionHelp = new Option(Constants.CLI_HELP, false, Constants.CLI_DESCRIPTION_HELP);
         optionHelp.setOptionalArg(true);
 
 
