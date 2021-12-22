@@ -111,15 +111,15 @@ public class Main {
             }
             if (cmd.hasOption(Constants.CLI_PRINT_HISTORY)) {
                 String[] arguments = cmd.getOptionValues(Constants.CLI_PRINT_HISTORY);
-                Result<TreeMap<History,List<Motion>>> result = dataProvider.getSubjectHistoryBySubjectId(Integer.parseInt(arguments[0]));
+                Result<TreeMap<History, List<Motion>>> result = dataProvider.getSubjectHistoryBySubjectId(Integer.parseInt(arguments[0]));
                 printSubjectHistory(result);
             }
             if (cmd.hasOption(Constants.CLI_GATE_ACTION)) {
                 String[] arguments = cmd.getOptionValues(Constants.CLI_GATE_ACTION);
-                boolean isSuccessfully = dataProvider.gateAction(Integer.parseInt(arguments[0]),Integer.parseInt(arguments[1]),MoveType.valueOf(arguments[2]));
-                if (isSuccessfully){
+                boolean isSuccessfully = dataProvider.gateAction(Integer.parseInt(arguments[0]), Integer.parseInt(arguments[1]), MoveType.valueOf(arguments[2]));
+                if (isSuccessfully) {
                     log.info("Объект успешно прошел барьер");
-                }else {
+                } else {
                     log.info("Отказано в доступе");
                 }
             }
@@ -190,6 +190,11 @@ public class Main {
         optionEnv.setArgName("filePath");
         optionEnv.setArgs(1);
         optionEnv.setOptionalArg(true);
+
+        Option optionDataType = new Option(Constants.CLI_DATA_TYPE, true, "Указание типа данных(XML,H2,CSV) (по умолчанию h2)");
+        optionDataType.setArgName("data_type");
+        optionDataType.setArgs(1);
+        optionDataType.setOptionalArg(true);
 
         Option optionLog = new Option(Constants.CLI_LOG, true, "Путь до файла log4j2.xml");
         optionLog.setArgName("filePath");
@@ -270,6 +275,7 @@ public class Main {
         options.addOption(optionDeleteSubjectAccess);
         options.addOption(optionPrintHistory);
         options.addOption(optionGateAction);
+        options.addOption(optionDataType);
         options.addOption(optionHelp);
         return options;
     }
