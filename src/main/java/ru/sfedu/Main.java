@@ -11,16 +11,12 @@ import ru.sfedu.api.IDataProvider;
 import ru.sfedu.model.*;
 import ru.sfedu.utils.ConfigurationUtil;
 import ru.sfedu.utils.SubjectUtil;
-import ru.sfedu.utils.TImeUtil;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 
 public class Main {
 
@@ -32,7 +28,6 @@ public class Main {
             CommandLine cmd = parser.parse(getAllOptions(), args);
             if (cmd.hasOption(Constants.CLI_ENVIRONMENT_PROPERTIES)) {
                 String[] arguments = cmd.getOptionValues(Constants.CLI_ENVIRONMENT_PROPERTIES);
-                log.info(arguments[0]);
                 ConfigurationUtil.setConfigPath(arguments[0]);
             }
             if (cmd.hasOption(Constants.CLI_LOG)) {
@@ -104,8 +99,61 @@ public class Main {
                 List<AccessBarrier> list = dataProvider.getAccessBarriersBySubjectId(Integer.parseInt(arguments[0]));
                 printAccessBarriers(list);
             }
+            if (cmd.hasOption(Constants.CLI_DELETE_SUBJECT)) {
+                String[] arguments = cmd.getOptionValues(Constants.CLI_DELETE_SUBJECT);
+                Result<Subject> result = dataProvider.deleteSubjectById(Integer.parseInt(arguments[0]));
+                analyzeDeletedSubject(result);
+            }
+            if (cmd.hasOption(Constants.CLI_DELETE_SUBJECT_ACCESS)) {
+                String[] arguments = cmd.getOptionValues(Constants.CLI_DELETE_SUBJECT_ACCESS);
+                Result<AccessBarrier> accessBarrierResult = dataProvider.deleteAccessBarrierBySubjectAndBarrierId(Integer.parseInt(arguments[0]), Integer.parseInt(arguments[1]));
+                analyzeDeletedSubjectAccess(accessBarrierResult);
+            }
+            if (cmd.hasOption(Constants.CLI_PRINT_HISTORY)) {
+                String[] arguments = cmd.getOptionValues(Constants.CLI_PRINT_HISTORY);
+                Result<TreeMap<History,List<Motion>>> result = dataProvider.getSubjectHistoryBySubjectId(Integer.parseInt(arguments[0]));
+                printSubjectHistory(result);
+            }
+            if (cmd.hasOption(Constants.CLI_GATE_ACTION)) {
+                String[] arguments = cmd.getOptionValues(Constants.CLI_GATE_ACTION);
+                boolean isSuccessfully = dataProvider.gateAction(Integer.parseInt(arguments[0]),Integer.parseInt(arguments[1]),MoveType.valueOf(arguments[2]));
+                if (isSuccessfully){
+                    log.info("Объект успешно прошел барьер");
+                }else {
+                    log.info("Отказано в доступе");
+                }
+            }
+            if (cmd.hasOption(Constants.CLI_HELP)) {
+                printHelp(
+                        getAllOptions(), // опции по которым составляем help
+                        120, // ширина строки вывода
+                        "Options", // строка предшествующая выводу
+                        "-- HELP --", // строка следующая за выводом
+                        3, // число пробелов перед выводом опции
+                        5, // число пробелов перед выводом опцисания опции
+                        true, // выводить ли в строке usage список команд
+                        System.out // куда производить вывод
+                );
+            }
         } catch (ParseException e) {
             log.error("Произошла ошибка = {}", e.getMessage());
+        }
+
+    }
+
+    private static void analyzeDeletedSubjectAccess(Result<AccessBarrier> accessBarrierResult) {
+        if (accessBarrierResult.getCode() == Constants.CODE_ACCESS) {
+            log.info("Доступ пользователя удалён: {}", accessBarrierResult.getResult());
+        } else {
+            log.info("Доступ пользователя не найден: статус код: {}", accessBarrierResult.getCode());
+        }
+    }
+
+    private static void analyzeDeletedSubject(Result<Subject> result) {
+        if (result.getCode() == Constants.CODE_ACCESS) {
+            log.info("Пользователь успешно удален: {}", result.getResult());
+        } else {
+            log.info("Пользователь не найден: статус код = {}", result.getCode());
         }
     }
 
@@ -139,42 +187,73 @@ public class Main {
         Options options = new Options();
 
         Option optionEnv = new Option(Constants.CLI_ENVIRONMENT_PROPERTIES, true, "Путь до файла environment.properties");
+        optionEnv.setArgName("filePath");
         optionEnv.setArgs(1);
         optionEnv.setOptionalArg(true);
 
         Option optionLog = new Option(Constants.CLI_LOG, true, "Путь до файла log4j2.xml");
+        optionLog.setArgName("filePath");
         optionLog.setArgs(1);
         optionLog.setOptionalArg(true);
 
         Option optionAnimalRegistration = new Option(Constants.CLI_NEW_ANIMAL, true, "Создание нового пользователя (животное)");
+        optionAnimalRegistration.setArgName("name color");
         optionAnimalRegistration.setArgs(2);
         optionAnimalRegistration.setOptionalArg(true);
 
         Option optionTransportRegistration = new Option(Constants.CLI_NEW_TRANSPORT, true, "Создание нового пользователя (транспорт)");
+        optionTransportRegistration.setArgName("number color");
         optionTransportRegistration.setArgs(2);
         optionTransportRegistration.setOptionalArg(true);
 
         Option optionHumanRegistration = new Option(Constants.CLI_NEW_HUMAN, true, "Создание нового пользователя (человек)");
+        optionHumanRegistration.setArgName("root name surname patronymic login password email");
         optionHumanRegistration.setArgs(7);
         optionHumanRegistration.setOptionalArg(true);
 
-        Option optionPrintSubjects = new Option(Constants.CLI_PRINT_SUBJECTS, false, "Создание нового пользователя (транспорт)");
+        Option optionPrintSubjects = new Option(Constants.CLI_PRINT_SUBJECTS, false, "Вывод информации о всех юзерах");
         optionPrintSubjects.setOptionalArg(true);
 
-        Option optionBarrierRegistration = new Option(Constants.CLI_NEW_BARRIER, true, "Создание нового пользователя (транспорт)");
+        Option optionBarrierRegistration = new Option(Constants.CLI_NEW_BARRIER, true, "Регистрация барьера");
+        optionBarrierRegistration.setArgName("floor");
         optionBarrierRegistration.setArgs(1);
         optionBarrierRegistration.setOptionalArg(true);
 
-        Option optionPrintBarrier = new Option(Constants.CLI_PRINT_BARRIERS, false, "Создание нового пользователя (транспорт)");
+        Option optionPrintBarrier = new Option(Constants.CLI_PRINT_BARRIERS, false, "Вывод информации о всех барьерах");
         optionPrintBarrier.setOptionalArg(true);
 
-        Option optionGrantAccess = new Option(Constants.CLI_GRANT_ACCESS, true, "Создание нового пользователя (человек)");
+        Option optionGrantAccess = new Option(Constants.CLI_GRANT_ACCESS, true, "Предоставление доступа к барьеру");
+        optionGrantAccess.setArgName("subject_id barrier_id year month day hours");
         optionGrantAccess.setArgs(6);
         optionGrantAccess.setOptionalArg(true);
 
-        Option optionPrintSubjectAccess = new Option(Constants.CLI_PRINT_SUBJECT_ACCESS, true, "Создание нового пользователя (человек)");
+        Option optionPrintSubjectAccess = new Option(Constants.CLI_PRINT_SUBJECT_ACCESS, true, "Вывод информации о правах данного пользователя");
+        optionPrintSubjectAccess.setArgName("subject_id");
         optionPrintSubjectAccess.setArgs(1);
         optionPrintSubjectAccess.setOptionalArg(true);
+
+        Option optionDeleteSubject = new Option(Constants.CLI_DELETE_SUBJECT, true, "Удаление пользователя и доступов связаных с ним");
+        optionDeleteSubject.setArgName("subject_id");
+        optionDeleteSubject.setArgs(1);
+        optionDeleteSubject.setOptionalArg(true);
+
+        Option optionDeleteSubjectAccess = new Option(Constants.CLI_DELETE_SUBJECT_ACCESS, true, "Удаление доступа пользователя");
+        optionDeleteSubjectAccess.setArgName("subject_id barrier_id");
+        optionDeleteSubjectAccess.setArgs(2);
+        optionDeleteSubjectAccess.setOptionalArg(true);
+
+        Option optionPrintHistory = new Option(Constants.CLI_PRINT_HISTORY, true, "Вывод истории пользователя");
+        optionPrintHistory.setArgName("subject_id");
+        optionPrintHistory.setArgs(1);
+        optionPrintHistory.setOptionalArg(true);
+
+        Option optionGateAction = new Option(Constants.CLI_GATE_ACTION, true, "Вход или выход через барьер");
+        optionGateAction.setArgName("subject_id barrier_id move_type(IN,OUT)");
+        optionGateAction.setArgs(3);
+        optionGateAction.setOptionalArg(true);
+
+        Option optionHelp = new Option(Constants.CLI_HELP, false, "Информация по использованию");
+        optionHelp.setOptionalArg(true);
 
 
         options.addOption(optionEnv);
@@ -187,6 +266,11 @@ public class Main {
         options.addOption(optionPrintBarrier);
         options.addOption(optionGrantAccess);
         options.addOption(optionPrintSubjectAccess);
+        options.addOption(optionDeleteSubject);
+        options.addOption(optionDeleteSubjectAccess);
+        options.addOption(optionPrintHistory);
+        options.addOption(optionGateAction);
+        options.addOption(optionHelp);
         return options;
     }
 
@@ -204,39 +288,44 @@ public class Main {
         });
     }
 
-    private static void printMotionData() {
-        try {
-            Class.forName(getConfigurationEntry(Constants.H2_DRIVER)).getDeclaredConstructor().newInstance();
-            Connection connection = DriverManager.getConnection(
-                    getConfigurationEntry(Constants.H2_CONNECTOR).concat("./").concat(Constants.H2_PATH_FOLDER).concat(Constants.H2_DB_NAME),
-                    getConfigurationEntry(Constants.H2_LOGIN),
-                    getConfigurationEntry(Constants.H2_PASSWORD));
-
-            ResultSet resultSet = connection.createStatement().executeQuery("select * from ".concat(Constants.SQL_TABLE_NAME_MOTION));
-            while (resultSet.next()) {
-                System.out.println(resultSet.getString("id").concat(" ").concat(resultSet.getString("barrierId")).concat(resultSet.getString("historyId")).concat(resultSet.getString("moveType")));
+    private static void printSubjectHistory(Result<TreeMap<History, List<Motion>>> result) {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        if (result.getCode() == Constants.CODE_ACCESS) {
+            TreeMap<History, List<Motion>> treeMap = result.getResult();
+            for (History history : treeMap.keySet()) {
+                List<Motion> motions = treeMap.get(history);
+                calendar.setTimeInMillis(history.getDate());
+                log.info("History: id = {}, subjectId = {}, date = {}", history.getId(), history.getSubjectId(), dateFormat.format(calendar.getTime()));
+                motions.forEach(motion -> log.info("Motion: {}", motion));
             }
-            connection.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            log.info("История не найдена. Статус код = {}", result.getCode());
         }
     }
 
-    private static void printAccessBarrierData() {
-        try {
-            Class.forName(getConfigurationEntry(Constants.H2_DRIVER)).getDeclaredConstructor().newInstance();
-            Connection connection = DriverManager.getConnection(
-                    getConfigurationEntry(Constants.H2_CONNECTOR).concat("./").concat(Constants.H2_PATH_FOLDER).concat(Constants.H2_DB_NAME),
-                    getConfigurationEntry(Constants.H2_LOGIN),
-                    getConfigurationEntry(Constants.H2_PASSWORD));
-
-            ResultSet resultSet = connection.createStatement().executeQuery("select * from ".concat(Constants.SQL_TABLE_NAME_ACCESS_BARRIER));
-            while (resultSet.next()) {
-                System.out.println(resultSet.getString("id").concat(" ").concat(resultSet.getString("subjectId").concat(resultSet.getString("barrierId"))));
-            }
-            connection.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void printHelp(
+            final Options options,
+            final int printedRowWidth,
+            final String header,
+            final String footer,
+            final int spacesBeforeOption,
+            final int spacesBeforeOptionDescription,
+            final boolean displayUsage,
+            final OutputStream out) {
+        final String commandLineSyntax = "java -jar accessBarrier.jar";
+        final PrintWriter writer = new PrintWriter(out);
+        final HelpFormatter helpFormatter = new HelpFormatter();
+        helpFormatter.printHelp(
+                writer,
+                printedRowWidth,
+                commandLineSyntax,
+                header,
+                options,
+                spacesBeforeOption,
+                spacesBeforeOptionDescription,
+                footer,
+                displayUsage);
+        writer.flush();
     }
 }

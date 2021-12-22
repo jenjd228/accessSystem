@@ -9,7 +9,6 @@ import ru.sfedu.utils.FileUtil;
 import ru.sfedu.utils.SubjectUtil;
 import ru.sfedu.utils.TImeUtil;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
-import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 
 class DataProviderH2Test extends BaseTest {
 
@@ -53,6 +51,10 @@ class DataProviderH2Test extends BaseTest {
             resetId(statement, Constants.SQL_TABLE_NAME_ACCESS_BARRIER);
             clearTable(statement, Constants.SQL_TABLE_NAME_BARRIER);
             resetId(statement, Constants.SQL_TABLE_NAME_BARRIER);
+            clearTable(statement, Constants.SQL_TABLE_NAME_MOTION);
+            resetId(statement, Constants.SQL_TABLE_NAME_MOTION);
+            clearTable(statement, Constants.SQL_TABLE_NAME_HISTORY);
+            resetId(statement, Constants.SQL_TABLE_NAME_HISTORY);
             statement.close();
             connection.close();
         } catch (SQLException e) {
@@ -308,7 +310,7 @@ class DataProviderH2Test extends BaseTest {
     void getAllBarriersIfBarriersExists() {
         log.info("getAllBarriersIfBarriersExists [1]: - test started");
 
-        Barrier barrier = SubjectUtil.createBarrier(1,2,false);
+        Barrier barrier = SubjectUtil.createBarrier(1, 2, false);
         actualDataProviderH2.barrierRegistration(2);
         List<Barrier> actual = actualDataProviderH2.getAllBarriers();
         List<Barrier> expected = new ArrayList<>();
@@ -325,10 +327,10 @@ class DataProviderH2Test extends BaseTest {
         log.info("getAccessBarriersBySubjectIdIfAccessBarriersExists[1]: - test started");
 
         Animal animal = createAnimal(null, "Red", "animal");
-        AccessBarrier accessBarrier = SubjectUtil.createAccessBarrier(1, 1, 1, TImeUtil.getUtcTimeInMillis(2020,1,1,1));
+        AccessBarrier accessBarrier = SubjectUtil.createAccessBarrier(1, 1, 1, TImeUtil.getUtcTimeInMillis(2020, 1, 1, 1));
         actualDataProviderH2.barrierRegistration(2);
         actualDataProviderH2.subjectRegistration(animal);
-        actualDataProviderH2.grantAccess(1,1,2020,1,1,1);
+        actualDataProviderH2.grantAccess(1, 1, 2020, 1, 1, 1);
         List<AccessBarrier> actual = actualDataProviderH2.getAccessBarriersBySubjectId(1);
         List<AccessBarrier> expected = new ArrayList<>();
         expected.add(accessBarrier);
@@ -356,7 +358,7 @@ class DataProviderH2Test extends BaseTest {
     void deleteAccessBarrierBySubjectAndBarrierIdIfNoExists() {
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[1]: - test started");
 
-        Result<AccessBarrier> actual = actualDataProviderH2.deleteAccessBarrierBySubjectAndBarrierId(1,1);
+        Result<AccessBarrier> actual = actualDataProviderH2.deleteAccessBarrierBySubjectAndBarrierId(1, 1);
         Result<AccessBarrier> expected = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[3]: actual data = {}", actual);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[4]: expected data = {}", expected);
@@ -374,13 +376,56 @@ class DataProviderH2Test extends BaseTest {
         actualDataProviderH2.barrierRegistration(2);
         actualDataProviderH2.subjectRegistration(animal);
         actualDataProviderH2.grantAccess(1, 1, 2020, 1, 1, 1);
-        Result<AccessBarrier> actual = actualDataProviderH2.deleteAccessBarrierBySubjectAndBarrierId(1,1);
+        Result<AccessBarrier> actual = actualDataProviderH2.deleteAccessBarrierBySubjectAndBarrierId(1, 1);
         Result<AccessBarrier> expected = new Result<>(null, Constants.CODE_ACCESS, accessBarrier);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[3]: actual data = {}", actual);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[4]: expected data = {}", expected);
 
         Assertions.assertEquals(expected, actual);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[5]: - test succeeded");
+    }
+
+    @Test
+    void getSubjectHistoryBySubjectIdIfHistoryExists() {
+        log.info("getSubjectHistoryBySubjectId[1]: - test started");
+
+        Animal animal = createAnimal(null, "Red", "animal");
+        Result<TreeMap<History, List<Motion>>> expected = new Result<>();
+        TreeMap<History, List<Motion>> treeMap = new TreeMap<>();
+        History history = SubjectUtil.createHistory(1, 1, TImeUtil.getCurrentUtcTimeInMillis());
+        Motion motion = SubjectUtil.createMotion(1, 1, 1, MoveType.IN);
+        List<Motion> list = new ArrayList<>();
+        list.add(motion);
+        treeMap.put(history, list);
+        expected.setCode(Constants.CODE_ACCESS);
+        expected.setResult(treeMap);
+        actualDataProviderH2.barrierRegistration(2);
+        actualDataProviderH2.subjectRegistration(animal);
+        actualDataProviderH2.grantAccess(1, 1, 2025, 1, 1, 1);
+        actualDataProviderH2.gateAction(1, 1, MoveType.IN);
+        Result<TreeMap<History, List<Motion>>> actual = actualDataProviderH2.getSubjectHistoryBySubjectId(1);
+
+        log.info("getSubjectHistoryBySubjectIdIfExists[3]: actual data = {}", actual);
+        log.info("getSubjectHistoryBySubjectIdIfExists[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getSubjectHistoryBySubjectId[5]: - test succeeded");
+    }
+
+    @Test
+    void getSubjectHistoryBySubjectIdIfHistoryNotExists() {
+        log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[1]: - test started");
+
+        Result<TreeMap<History, List<Motion>>> expected = new Result<>();
+        expected.setCode(Constants.CODE_NOT_FOUND);
+        expected.setResult(null);
+        Result<TreeMap<History, List<Motion>>> actual = actualDataProviderH2.getSubjectHistoryBySubjectId(1);
+
+        log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[3]: actual data = {}", actual);
+        log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[5]: - test succeeded");
     }
 
     private void resetId(Statement statement, String dbName) {

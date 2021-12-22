@@ -5,7 +5,7 @@ import com.opencsv.bean.CsvBindByPosition;
 import java.util.Objects;
 
 
-public class History extends OnlyId {
+public class History extends OnlyId implements Comparable<History> {
 
     public History() {
     }
@@ -53,5 +53,10 @@ public class History extends OnlyId {
                 ", subjectId=" + subjectId +
                 ", date=" + date +
                 '}';
+    }
+
+    @Override
+    public int compareTo(History o) {
+        return this.getId().compareTo(o.getId());
     }
 }

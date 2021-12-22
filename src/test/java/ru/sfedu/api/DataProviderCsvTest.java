@@ -445,7 +445,7 @@ class DataProviderCsvTest extends BaseTest {
         } catch (IOException e) {
             log.error("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[2]: error = {}", e.getMessage());
         }
-        Result<AccessBarrier> actual = actualDataProviderCsv.deleteAccessBarrierBySubjectAndBarrierId(1,1);
+        Result<AccessBarrier> actual = actualDataProviderCsv.deleteAccessBarrierBySubjectAndBarrierId(1, 1);
         Result<AccessBarrier> expected = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[3]: actual data = {}", actual);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfNoExists[4]: expected data = {}", expected);
@@ -468,13 +468,62 @@ class DataProviderCsvTest extends BaseTest {
         actualDataProviderCsv.barrierRegistration(2);
         actualDataProviderCsv.subjectRegistration(animal);
         actualDataProviderCsv.grantAccess(1, 1, 2020, 1, 1, 1);
-        Result<AccessBarrier> actual = actualDataProviderCsv.deleteAccessBarrierBySubjectAndBarrierId(1,1);
+        Result<AccessBarrier> actual = actualDataProviderCsv.deleteAccessBarrierBySubjectAndBarrierId(1, 1);
         Result<AccessBarrier> expected = new Result<>(null, Constants.CODE_ACCESS, accessBarrier);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[3]: actual data = {}", actual);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[4]: expected data = {}", expected);
 
         Assertions.assertEquals(expected, actual);
         log.info("deleteAccessBarrierBySubjectAndBarrierIdIfExists[5]: - test succeeded");
+    }
+
+    @Test
+    void getSubjectHistoryBySubjectIdIfHistoryExists() {
+        log.info("getSubjectHistoryBySubjectId[1]: - test started");
+        try {
+            createFileIfNotExists(motionsFilePath);
+            createFileIfNotExists(historyFilePath);
+        } catch (IOException e) {
+            log.error("getSubjectHistoryBySubjectId[2]: error = {}", e.getMessage());
+        }
+
+        Animal animal = createAnimal(null, "Red", "animal");
+        Result<TreeMap<History, List<Motion>>> expected = new Result<>();
+        TreeMap<History, List<Motion>> treeMap = new TreeMap<>();
+        History history = SubjectUtil.createHistory(1, 1, TImeUtil.getCurrentUtcTimeInMillis());
+        Motion motion = SubjectUtil.createMotion(1, 1, 1, MoveType.IN);
+        List<Motion> list = new ArrayList<>();
+        list.add(motion);
+        treeMap.put(history, list);
+        expected.setCode(Constants.CODE_ACCESS);
+        expected.setResult(treeMap);
+        actualDataProviderCsv.barrierRegistration(2);
+        actualDataProviderCsv.subjectRegistration(animal);
+        actualDataProviderCsv.grantAccess(1, 1, 2025, 1, 1, 1);
+        actualDataProviderCsv.gateAction(1, 1, MoveType.IN);
+        Result<TreeMap<History, List<Motion>>> actual = actualDataProviderCsv.getSubjectHistoryBySubjectId(1);
+
+        log.info("getSubjectHistoryBySubjectIdIfExists[3]: actual data = {}", actual);
+        log.info("getSubjectHistoryBySubjectIdIfExists[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getSubjectHistoryBySubjectId[5]: - test succeeded");
+    }
+
+    @Test
+    void getSubjectHistoryBySubjectIdIfHistoryNotExists() {
+        log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[1]: - test started");
+
+        Result<TreeMap<History, List<Motion>>> expected = new Result<>();
+        expected.setCode(Constants.CODE_NOT_FOUND);
+        expected.setResult(null);
+        Result<TreeMap<History, List<Motion>>> actual = actualDataProviderCsv.getSubjectHistoryBySubjectId(1);
+
+        log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[3]: actual data = {}", actual);
+        log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[5]: - test succeeded");
     }
 
 }

@@ -73,9 +73,14 @@ public class Constants {
     public static final String CLI_DATA_TYPE = "dType";
     public static final String CLI_PRINT_SUBJECTS = "ps";
     public static final String CLI_PRINT_BARRIERS = "pb";
+    public static final String CLI_PRINT_HISTORY = "ph";
     public static final String CLI_NEW_BARRIER = "nb";
     public static final String CLI_GRANT_ACCESS = "ga";
     public static final String CLI_PRINT_SUBJECT_ACCESS = "psa";
+    public static final String CLI_DELETE_SUBJECT = "ds";
+    public static final String CLI_DELETE_SUBJECT_ACCESS = "dsa";
+    public static final String CLI_GATE_ACTION = "gac";
+    public static final String CLI_HELP = "help";
 
 
     public static final String NOT_VALID_NAME = "Имя должно состоять из только букв латинского, длиною от 2 до 25 символов.";
@@ -110,6 +115,8 @@ public class Constants {
     public static final String SELECT_BARRIER_BY_ID = String.format("SELECT * FROM %s WHERE %s ", SQL_TABLE_NAME_BARRIER, KEY_ID).concat(" = %d");
     public static final String SELECT_SUBJECT_BY_ID = String.format("SELECT * FROM %s WHERE %s ", SQL_TABLE_NAME_SUBJECT, KEY_ID).concat(" = %d");
     public static final String SELECT_HISTORY_BY_DATE_AND_SUBJECT_ID = "SELECT * FROM ".concat(SQL_TABLE_NAME_HISTORY).concat(" WHERE ").concat(KEY_DATE).concat(" = %d AND ").concat(KEY_SUBJECT_ID).concat(" = %d");
+    public static final String SELECT_HISTORY_BY_SUBJECT_ID = "SELECT * FROM ".concat(SQL_TABLE_NAME_HISTORY).concat(" WHERE ").concat(KEY_SUBJECT_ID).concat(" = %d");
+    public static final String SELECT_MOTION_BY_HISTORY_ID = "SELECT * FROM ".concat(SQL_TABLE_NAME_MOTION).concat(" WHERE ").concat(KEY_HISTORY_ID).concat(" = %d");
 
     public static final String INSERT_ACCESS_BARRIER = String.format("INSERT INTO %s (%s,%s,%s)", SQL_TABLE_NAME_ACCESS_BARRIER, KEY_SUBJECT_ID, KEY_BARRIER_ID, KEY_DATE).concat("VALUES('%d','%d','%d')");
     public static final String INSERT_MOTION = String.format("INSERT INTO %s (%s,%s,%s)", SQL_TABLE_NAME_MOTION, KEY_BARRIER_ID, KEY_HISTORY_ID, KEY_MOVE_TYPE).concat("VALUES('%d','%d','%s')");

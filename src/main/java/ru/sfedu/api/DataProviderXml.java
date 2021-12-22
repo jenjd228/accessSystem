@@ -263,6 +263,46 @@ public class DataProviderXml implements IDataProvider {
         return result;
     }
 
+    @Override
+    public Result<TreeMap<History, List<Motion>>> getSubjectHistoryBySubjectId(Integer subjectId) {
+        Result<TreeMap<History, List<Motion>>> result = new Result<>();
+        TreeMap<History, List<Motion>> listTreeMap = new TreeMap<>();
+        List<History> histories = getAllSubjectHistories(subjectId);
+        histories.forEach(history -> {
+            List<Motion> motions = getMotionByHistoryId(history.getId());
+            listTreeMap.put(history, motions);
+        });
+        if (listTreeMap.isEmpty()) {
+            result.setCode(Constants.CODE_NOT_FOUND);
+        } else {
+            result.setCode(Constants.CODE_ACCESS);
+            result.setResult(listTreeMap);
+        }
+        return result;
+    }
+
+    private List<Motion> getMotionByHistoryId(Integer historyId) {
+        log.info("getMotionBySubjectId [1]: historyId = {}", historyId);
+        try {
+            Wrapper<Motion> wrapper = readFile(motionsFilePath);
+            return wrapper.getList().stream().filter(it -> it.getHistoryId().equals(historyId)).toList();
+        } catch (Exception e) {
+            log.error("getMotionBySubjectId [2]: error = {}", e.getMessage());
+        }
+        return new ArrayList<>();
+    }
+
+    private List<History> getAllSubjectHistories(Integer subjectId) {
+        log.info("getAllSubjectHistories [1]: subjectId = {}", subjectId);
+        try {
+            Wrapper<History> wrapper = readFile(historyFilePath);
+            return wrapper.getList().stream().filter(it -> it.getSubjectId().equals(subjectId)).toList();
+        } catch (Exception e) {
+            log.error("getAllSubjectHistories [2]: error = {}", e.getMessage());
+        }
+        return new ArrayList<>();
+    }
+
     private void deleteAccessBarrierBySubjectId(Integer subjectId) {
         log.info("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
         try {

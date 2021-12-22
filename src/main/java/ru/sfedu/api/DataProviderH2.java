@@ -243,7 +243,7 @@ public class DataProviderH2 implements IDataProvider {
                         statement.executeUpdate(String.format(Constants.DELETE_ACCESS_BARRIERS_BY_ID, it.getId()));
                         MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, it);
                     } catch (SQLException e) {
-                        log.error("deleteAccessBarrierBySubjectAndBarrierId[3]: error = {}",e.getMessage());
+                        log.error("deleteAccessBarrierBySubjectAndBarrierId[3]: error = {}", e.getMessage());
                     }
                 });
                 statement.close();
@@ -255,6 +255,66 @@ public class DataProviderH2 implements IDataProvider {
             result.setCode(Constants.CODE_ERROR);
         }
         return result;
+    }
+
+    @Override
+    public Result<TreeMap<History, List<Motion>>> getSubjectHistoryBySubjectId(Integer subjectId) {
+        Result<TreeMap<History, List<Motion>>> result = new Result<>();
+        TreeMap<History, List<Motion>> listTreeMap = new TreeMap<>();
+        List<History> histories = getAllSubjectHistories(subjectId);
+        histories.forEach(history -> {
+            List<Motion> motions = getMotionByHistoryId(history.getId());
+            listTreeMap.put(history, motions);
+        });
+        if (listTreeMap.isEmpty()) {
+            result.setCode(Constants.CODE_NOT_FOUND);
+        } else {
+            result.setCode(Constants.CODE_ACCESS);
+            result.setResult(listTreeMap);
+        }
+        return result;
+    }
+
+    private List<Motion> getMotionByHistoryId(Integer historyId) {
+        log.info("getMotionBySubjectId [1]: historyId = {}", historyId);
+        try {
+            List<Motion> motions = new ArrayList<>();
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_MOTION_BY_HISTORY_ID, historyId));
+            while (resultSet.next()) {
+                if (resultSet.getInt(Constants.KEY_HISTORY_ID) == historyId) {
+                    motions.add(createMotion(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_HISTORY_ID), resultSet.getInt(Constants.KEY_BARRIER_ID), MoveType.valueOf(resultSet.getString(Constants.KEY_MOVE_TYPE))));
+                }
+            }
+            statement.close();
+            connection.close();
+            return motions;
+        } catch (SQLException e) {
+            log.error("getMotionBySubjectId [2]: error = {}", e.getMessage());
+        }
+        return new ArrayList<>();
+    }
+
+    private List<History> getAllSubjectHistories(Integer subjectId) {
+        log.info("getAllSubjectHistories [1]: subjectId = {}", subjectId);
+        try {
+            List<History> histories = new ArrayList<>();
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_HISTORY_BY_SUBJECT_ID, subjectId));
+            while (resultSet.next()) {
+                if (resultSet.getInt(Constants.KEY_SUBJECT_ID) == subjectId) {
+                    histories.add(createHistory(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_SUBJECT_ID), resultSet.getLong(Constants.KEY_DATE)));
+                }
+            }
+            statement.close();
+            connection.close();
+            return histories;
+        } catch (Exception e) {
+            log.error("getAllSubjectHistories [2]: error = {}", e.getMessage());
+        }
+        return new ArrayList<>();
     }
 
     private void deleteAccessBarrierBySubjectId(Integer subjectId) {

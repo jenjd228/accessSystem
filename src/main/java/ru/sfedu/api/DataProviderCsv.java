@@ -2,6 +2,7 @@ package ru.sfedu.api;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import com.opencsv.exceptions.CsvValidationException;
 import org.apache.logging.log4j.LogManager;
@@ -338,6 +339,60 @@ public class DataProviderCsv implements IDataProvider {
 
         log.info("deleteAccessBarrierBySubjectAndBarrierId [8] : subject modification is successful");
         return accessBarrierResult;
+    }
+
+    @Override
+    public Result<TreeMap<History, List<Motion>>> getSubjectHistoryBySubjectId(Integer subjectId) {
+        Result<TreeMap<History, List<Motion>>> result = new Result<>();
+        TreeMap<History, List<Motion>> listTreeMap = new TreeMap<>();
+        List<History> histories = getAllSubjectHistories(subjectId);
+        histories.forEach(history -> {
+            List<Motion> motions = getMotionByHistoryId(history.getId());
+            listTreeMap.put(history, motions);
+        });
+        if (listTreeMap.isEmpty()) {
+            result.setCode(Constants.CODE_NOT_FOUND);
+        } else {
+            result.setCode(Constants.CODE_ACCESS);
+            result.setResult(listTreeMap);
+        }
+        return result;
+    }
+
+    private List<Motion> getMotionByHistoryId(Integer historyId) {
+        log.info("getMotionBySubjectId [1]: historyId = {}", historyId);
+        try {
+            FileReader fileReader = new FileReader(motionsFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+            List<Motion> motions = reader.readAll().stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createMotion(Integer.parseInt(records[0]), Integer.parseInt(records[2]), Integer.parseInt(records[1]), MoveType.valueOf(records[3]));
+                    })
+                    .filter(it -> it.getHistoryId().equals(historyId)).toList();
+            return motions;
+        } catch (IOException | CsvException e) {
+            log.error("getMotionBySubjectId [2]: error = {}", e.getMessage());
+        }
+        return new ArrayList<>();
+    }
+
+    private List<History> getAllSubjectHistories(Integer subjectId) {
+        log.info("getAllSubjectHistories [1]: subjectId = {}", subjectId);
+        try {
+            FileReader fileReader = new FileReader(historyFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+            List<History> histories = reader.readAll().stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createHistory(Integer.parseInt(records[0]), Integer.parseInt(records[1]), Long.parseLong(records[2]));
+                    })
+                    .filter(it -> it.getSubjectId().equals(subjectId)).toList();
+            return histories;
+        } catch (IOException | CsvException e) {
+            log.error("getAllSubjectHistories [2]: error = {}", e.getMessage());
+        }
+        return new ArrayList<>();
     }
 
     private void deleteAccessBarriersBySubjectId(Integer subjectId) {

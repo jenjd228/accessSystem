@@ -19,12 +19,11 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 
 public class MongoProvider {
-    //sudo systemctl start mongod.service
 
-    private static final Logger logger = LogManager.getLogger(MongoProvider.class.getName());
+    private static final Logger log = LogManager.getLogger(MongoProvider.class.getName());
 
     public static <T> void save(CommandType command, RepositoryType repositoryType, String bdName, T obj) {
-        logger.info("save [1]: command = {}, type = {}, object = {}, dbName = {}", command, repositoryType, obj, bdName);
+        log.info("save [1]: command = {}, type = {}, object = {}, dbName = {}", command, repositoryType, obj, bdName);
         try {
             MongoCollection<Document> collection = getCollection(obj.getClass(), bdName);
 
@@ -35,7 +34,7 @@ public class MongoProvider {
             document.put(Constants.MONGO_FIELD_OBJECT, obj);
             collection.insertOne(document);
         } catch (Exception e) {
-            logger.error("save [2]: {}", e.getMessage());
+            log.error("save [2]: {}", e.getMessage());
         }
     }
 

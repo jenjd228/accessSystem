@@ -159,10 +159,27 @@ public class SubjectUtil {
         return history;
     }
 
+    public static History createHistory(Integer id, Integer subjectId, Long date) {
+        History history = new History();
+        history.setDate(date);
+        history.setSubjectId(subjectId);
+        history.setId(id);
+        return history;
+    }
+
     public static Motion createMotion(Integer barrierId, MoveType moveType) {
         Motion motion = new Motion();
         motion.setBarrierId(barrierId);
         motion.setMoveType(moveType);
+        return motion;
+    }
+
+    public static Motion createMotion(Integer id,Integer historyId,Integer barrierId, MoveType moveType) {
+        Motion motion = new Motion();
+        motion.setBarrierId(barrierId);
+        motion.setMoveType(moveType);
+        motion.setId(id);
+        motion.setHistoryId(historyId);
         return motion;
     }
 

@@ -3,6 +3,7 @@ package ru.sfedu.api;
 import ru.sfedu.model.*;
 
 import java.util.List;
+import java.util.TreeMap;
 
 /**
  * @author Kotsaba Eugeny
@@ -94,4 +95,12 @@ public interface IDataProvider {
      * @return the last deleted AccessBarrier.
      **/
     Result<AccessBarrier> deleteAccessBarrierBySubjectAndBarrierId(Integer subjectId, Integer barrierId);
+
+    /**
+     * Method that returns the subject history by subjectId.
+     *
+     * @param subjectId - the id of a subject.
+     * @return the tree map where the key is a history, a value is a list of motions.
+     **/
+    Result<TreeMap<History, List<Motion>>> getSubjectHistoryBySubjectId(Integer subjectId);
 }
