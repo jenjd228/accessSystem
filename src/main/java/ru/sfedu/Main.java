@@ -72,7 +72,7 @@ public class Main {
                 analyzeRegistrationResult(result);
             }
             if (cmd.hasOption(Constants.CLI_PRINT_SUBJECTS)) {
-                List<Subject> subjects = dataProvider.getAllUsers();
+                List<Subject> subjects = dataProvider.getAllSubjects();
                 printData(subjects);
             }
             if (cmd.hasOption(Constants.CLI_NEW_BARRIER)) {
@@ -91,8 +91,11 @@ public class Main {
             }
             if (cmd.hasOption(Constants.CLI_GRANT_ACCESS)) {
                 String[] arguments = cmd.getOptionValues(Constants.CLI_GRANT_ACCESS);
-                Result<Object> result = dataProvider.grantAccess(Integer.parseInt(arguments[0]), Integer.parseInt(arguments[1]), Integer.parseInt(arguments[2]), Integer.parseInt(arguments[3]), Integer.parseInt(arguments[4]), Integer.parseInt(arguments[5]));
-                analyzeGrantAccessResult(result);
+                boolean isValid = grantAccessValidation(arguments);
+                if (isValid) {
+                    Result<Object> result = dataProvider.grantAccess(Integer.parseInt(arguments[0]), Integer.parseInt(arguments[1]), Integer.parseInt(arguments[2]), Integer.parseInt(arguments[3]), Integer.parseInt(arguments[4]), Integer.parseInt(arguments[5]));
+                    analyzeGrantAccessResult(result);
+                }
             }
             if (cmd.hasOption(Constants.CLI_PRINT_SUBJECT_ACCESS)) {
                 String[] arguments = cmd.getOptionValues(Constants.CLI_PRINT_SUBJECT_ACCESS);
@@ -138,7 +141,24 @@ public class Main {
         } catch (ParseException e) {
             log.error("Произошла ошибка = {}", e.getMessage());
         }
+    }
 
+    private static boolean grantAccessValidation(String[] arguments) {
+        try {
+            int year = Integer.parseInt(arguments[2]);
+            int month = Integer.parseInt(arguments[3]);
+            int day = Integer.parseInt(arguments[4]);
+            int hours = Integer.parseInt(arguments[5]);
+
+            if (year < 2020 || month < 1 || month > 12 || day < 1 || day > 31 || hours < 0 || hours > 24) {
+                log.info("Введенные данные не корректны.");
+                return false;
+            }
+        } catch (Exception e) {
+            log.info("Введенные данные не корректны.");
+            return false;
+        }
+        return true;
     }
 
     private static void analyzeDeletedSubjectAccess(Result<AccessBarrier> accessBarrierResult) {

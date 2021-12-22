@@ -159,7 +159,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     @Override
-    public List<Subject> getAllUsers() {
+    public List<Subject> getAllSubjects() {
         List<Subject> subjects = new ArrayList<>();
         try {
             FileReader fileReader = new FileReader(subjectsFilePath);

@@ -146,7 +146,7 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     @Override
-    public List<Subject> getAllUsers() {
+    public List<Subject> getAllSubjects() {
         List<Subject> subjects = new ArrayList<>();
         try {
             Connection connection = connection();

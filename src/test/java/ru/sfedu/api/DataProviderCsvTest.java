@@ -287,7 +287,7 @@ class DataProviderCsvTest extends BaseTest {
         } catch (IOException e) {
             log.error("getAllSubjectsIfNoSubjects [2]: error = {}", e.getMessage());
         }
-        List<Subject> actual = actualDataProviderCsv.getAllUsers();
+        List<Subject> actual = actualDataProviderCsv.getAllSubjects();
         List<Subject> expected = new ArrayList<>();
         log.info("getAllSubjectsIfNoSubjects [3]: actual data = {}", actual);
         log.info("getAllSubjectsIfNoSubjects [4]: expected data = {}", expected);
@@ -307,7 +307,7 @@ class DataProviderCsvTest extends BaseTest {
         }
         Animal animal = createAnimal(null, "Red", "animal");
         actualDataProviderCsv.subjectRegistration(animal);
-        List<Subject> actual = actualDataProviderCsv.getAllUsers();
+        List<Subject> actual = actualDataProviderCsv.getAllSubjects();
         List<Subject> expected = new ArrayList<>();
         expected.add(animal);
         log.info("getAllSubjectsIfSubjectsExits [3]: actual data = {}", actual);

@@ -238,7 +238,7 @@ class DataProviderH2Test extends BaseTest {
     void getAllSubjectsIfNoSubjects() {
         log.info("getAllSubjectsIfNoSubjects [1]: - test started");
 
-        List<Subject> actual = actualDataProviderH2.getAllUsers();
+        List<Subject> actual = actualDataProviderH2.getAllSubjects();
         List<Subject> expected = new ArrayList<>();
         log.info("getAllSubjectsIfNoSubjects [3]: actual data = {}", actual);
         log.info("getAllSubjectsIfNoSubjects [4]: expected data = {}", expected);
@@ -253,7 +253,7 @@ class DataProviderH2Test extends BaseTest {
 
         Animal animal = createAnimal(null, "Red", "animal");
         actualDataProviderH2.subjectRegistration(animal);
-        List<Subject> actual = actualDataProviderH2.getAllUsers();
+        List<Subject> actual = actualDataProviderH2.getAllSubjects();
         List<Subject> expected = new ArrayList<>();
         animal.setId(1);
         expected.add(animal);

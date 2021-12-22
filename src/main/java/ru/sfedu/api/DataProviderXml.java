@@ -155,7 +155,7 @@ public class DataProviderXml implements IDataProvider {
     }
 
     @Override
-    public List<Subject> getAllUsers() {
+    public List<Subject> getAllSubjects() {
         List<Subject> subjects = new ArrayList<>();
         try {
             Wrapper<Subject> wrapper = readFile(subjectsFilePath);

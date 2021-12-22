@@ -59,7 +59,7 @@ public interface IDataProvider {
      *
      * @return a list of subjects in the system.
      **/
-    List<Subject> getAllUsers();
+    List<Subject> getAllSubjects();
 
     /**
      * Method that returns all AccessBarriers by subject id.
