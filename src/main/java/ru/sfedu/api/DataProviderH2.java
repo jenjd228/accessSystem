@@ -264,11 +264,13 @@ public class DataProviderH2 implements IDataProvider {
         try {
             Connection connection = connection();
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_BARRIER_BY_ID,barrierId));
-            if (resultSet.next()){
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_BARRIER_BY_ID, barrierId));
+            if (resultSet.next()) {
                 result.setCode(Constants.CODE_ACCESS);
-                result.setResult(createBarrier(resultSet.getInt(Constants.KEY_ID),resultSet.getInt(Constants.KEY_BARRIER_FLOOR),resultSet.getBoolean(Constants.KEY_IS_OPEN)));
-                statement.executeUpdate(String.format(Constants.DELETE_BARRIER_BY_BARRIER_ID,barrierId));
+                Barrier barrier = createBarrier(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_BARRIER_FLOOR), resultSet.getBoolean(Constants.KEY_IS_OPEN));
+                result.setResult(barrier);
+                statement.executeUpdate(String.format(Constants.DELETE_BARRIER_BY_BARRIER_ID, barrierId));
+                MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, barrier);
             }
             statement.close();
             connection.close();
