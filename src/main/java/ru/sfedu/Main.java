@@ -126,6 +126,11 @@ public class Main {
                     log.info("Отказано в доступе");
                 }
             }
+            if (cmd.hasOption(Constants.CLI_DELETE_BARRIER)) {
+                String[] arguments = cmd.getOptionValues(Constants.CLI_DELETE_BARRIER);
+                Result<Barrier> barrierResult = dataProvider.deleteBarrierById(Integer.parseInt(arguments[0]));
+                analyzeDeletedBarrier(barrierResult);
+            }
             if (cmd.hasOption(Constants.CLI_HELP)) {
                 printHelp(
                         getAllOptions(), // опции по которым составляем help
@@ -140,6 +145,14 @@ public class Main {
             }
         } catch (ParseException e) {
             log.error("Произошла ошибка = {}", e.getMessage());
+        }
+    }
+
+    private static void analyzeDeletedBarrier(Result<Barrier> barrierResult) {
+        if (barrierResult.getCode() == Constants.CODE_ACCESS){
+            log.info("Барьер удалён = {}",barrierResult.getResult());
+        }else {
+            log.info("Произошла ошибка или барьер не найден. Статус ошибки = {}",barrierResult.getCode());
         }
     }
 
@@ -277,6 +290,11 @@ public class Main {
         optionGateAction.setArgs(3);
         optionGateAction.setOptionalArg(true);
 
+        Option optionDeleteBarrier = new Option(Constants.CLI_DELETE_BARRIER, true, Constants.CLI_DESCRIPTION_DELETE_BARRIER);
+        optionDeleteBarrier.setArgName(Constants.CLI_ARGS_DELETE_BARRIER);
+        optionDeleteBarrier.setArgs(1);
+        optionDeleteBarrier.setOptionalArg(true);
+
         Option optionHelp = new Option(Constants.CLI_HELP, false, Constants.CLI_DESCRIPTION_HELP);
         optionHelp.setOptionalArg(true);
 
@@ -296,6 +314,7 @@ public class Main {
         options.addOption(optionPrintHistory);
         options.addOption(optionGateAction);
         options.addOption(optionDataType);
+        options.addOption(optionDeleteBarrier);
         options.addOption(optionHelp);
         return options;
     }

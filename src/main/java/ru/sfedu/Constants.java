@@ -79,6 +79,7 @@ public class Constants {
     public static final String CLI_PRINT_SUBJECT_ACCESS = "psa";
     public static final String CLI_DELETE_SUBJECT = "ds";
     public static final String CLI_DELETE_SUBJECT_ACCESS = "dsa";
+    public static final String CLI_DELETE_BARRIER = "db";
     public static final String CLI_GATE_ACTION = "gac";
     public static final String CLI_HELP = "help";
 
@@ -95,6 +96,7 @@ public class Constants {
     public static final String CLI_ARGS_NAME_DELETE_SUBJECT_ACCESS = "subject_id barrier_id";
     public static final String CLI_ARGS_NAME_GATE_ACTION = "subject_id barrier_id move_type(IN,OUT)";
     public static final String CLI_ARGS_NAME_PRINT_HISTORY = "subject_id";
+    public static final String CLI_ARGS_DELETE_BARRIER = "barrier_id";
 
     public static final String CLI_DESCRIPTION_ENVIRONMENT_PROPERTIES = "Путь до файла environment.properties";
     public static final String CLI_DESCRIPTION_LOG = "Путь до файла log4j2.xml";
@@ -112,6 +114,7 @@ public class Constants {
     public static final String CLI_DESCRIPTION_DELETE_SUBJECT_ACCESS = "Удаление доступа пользователя";
     public static final String CLI_DESCRIPTION_GATE_ACTION = "Вход или выход через барьер";
     public static final String CLI_DESCRIPTION_HELP = "Информация по использованию сервиса";
+    public static final String CLI_DESCRIPTION_DELETE_BARRIER = "Удаление барьера";
 
 
     public static final String NOT_VALID_NAME = "Имя должно состоять из только букв латинского, длиною от 2 до 25 символов.";
@@ -155,6 +158,7 @@ public class Constants {
     public static final String INSERT_BARRIER = String.format("INSERT INTO %s (%s,%s) ", SQL_TABLE_NAME_BARRIER, KEY_BARRIER_FLOOR, KEY_IS_OPEN).concat("VALUES('%d','%b')");
     public static final String INSERT_SUBJECT = String.format("INSERT INTO %s (%s,%s,%s,%s,%s,%s,%s,%s,%s) ", SQL_TABLE_NAME_SUBJECT, KEY_TYPE, KEY_NAME, KEY_PASSWORD, KEY_LOGIN, KEY_SURNAME, KEY_PATRONYMIC, KEY_EMAIL, KEY_COLOR, KEY_NUMBER).concat("VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')");
 
+    public static final String DELETE_BARRIER_BY_BARRIER_ID = String.format("DELETE FROM %s WHERE ",SQL_TABLE_NAME_BARRIER).concat(KEY_ID).concat(" = %d");
     public static final String DELETE_ACCESS_BARRIERS_BY_ID = String.format("DELETE FROM %s WHERE ", SQL_TABLE_NAME_ACCESS_BARRIER).concat(KEY_ID).concat(" = %d");
     public static final String DELETE_SUBJECT_BY_ID = String.format("DELETE FROM %s WHERE ", SQL_TABLE_NAME_SUBJECT).concat(KEY_ID).concat(" = %d");
 

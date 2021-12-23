@@ -526,4 +526,55 @@ class DataProviderCsvTest extends BaseTest {
         log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[5]: - test succeeded");
     }
 
+    @Test
+    void deleteBarrierIfNotExists() {
+        log.info("deleteBarrierIfNotExist[1]: - test started");
+
+        try {
+            createFileIfNotExists(barriersFilePath);
+        } catch (IOException e) {
+            log.error("deleteBarrierIfNotExist[2]: error = {}",e.getMessage());
+        }
+
+        Result<Barrier> expected = new Result<>(null,Constants.CODE_NOT_FOUND,null);
+        Result<Barrier> actual = actualDataProviderCsv.deleteBarrierById(1);
+
+        log.info("deleteBarrierIfNotExist[3]: actual data = {}", actual);
+        log.info("deleteBarrierIfNotExist[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteBarrierIfNotExist[5]: - test succeeded");
+    }
+
+    @Test
+    void deleteBarrierIfFileNotFound() {
+        log.info("deleteBarrierIfFileNotFound[1]: - test started");
+
+
+        Result<Barrier> expected = new Result<>(null,Constants.CODE_ERROR,null);
+        Result<Barrier> actual = actualDataProviderCsv.deleteBarrierById(1);
+
+        log.info("deleteBarrierIfFileNotFound[3]: actual data = {}", actual);
+        log.info("deleteBarrierIfFileNotFound[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteBarrierIfFileNotFound[5]: - test succeeded");
+    }
+
+    @Test
+    void deleteBarrierIfExists() {
+        log.info("deleteBarrierIfExist[1]: - test started");
+
+        Barrier barrier = SubjectUtil.createBarrier(1,1,false);
+        Result<Barrier> expected = new Result<>(null,Constants.CODE_ACCESS,barrier);
+        actualDataProviderCsv.barrierRegistration(1);
+        Result<Barrier> actual = actualDataProviderCsv.deleteBarrierById(1);
+
+        log.info("deleteBarrierIfExist[3]: actual data = {}", actual);
+        log.info("deleteBarrierIfExist[4]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteBarrierIfExist[5]: - test succeeded");
+    }
+
 }

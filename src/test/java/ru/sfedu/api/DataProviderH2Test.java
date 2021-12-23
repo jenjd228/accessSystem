@@ -9,6 +9,7 @@ import ru.sfedu.utils.FileUtil;
 import ru.sfedu.utils.SubjectUtil;
 import ru.sfedu.utils.TImeUtil;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
+import static ru.sfedu.utils.FileUtil.createFileIfNotExists;
 
 class DataProviderH2Test extends BaseTest {
 
@@ -426,6 +428,36 @@ class DataProviderH2Test extends BaseTest {
 
         Assertions.assertEquals(expected, actual);
         log.info("getSubjectHistoryBySubjectIdIfHistoryNotExists[5]: - test succeeded");
+    }
+
+    @Test
+    void deleteBarrierIfNotExists() {
+        log.info("deleteBarrierIfNotExist[1]: - test started");
+
+        Result<Barrier> expected = new Result<>(null,Constants.CODE_NOT_FOUND,null);
+        Result<Barrier> actual = actualDataProviderH2.deleteBarrierById(1);
+
+        log.info("deleteBarrierIfNotExist[2]: actual data = {}", actual);
+        log.info("deleteBarrierIfNotExist[3]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteBarrierIfNotExist[4]: - test succeeded");
+    }
+
+    @Test
+    void deleteBarrierIfExists() {
+        log.info("deleteBarrierIfExist[1]: - test started");
+
+        Barrier barrier = SubjectUtil.createBarrier(1,1,false);
+        Result<Barrier> expected = new Result<>(null,Constants.CODE_ACCESS,barrier);
+        actualDataProviderH2.barrierRegistration(1);
+        Result<Barrier> actual = actualDataProviderH2.deleteBarrierById(1);
+
+        log.info("deleteBarrierIfExist[2]: actual data = {}", actual);
+        log.info("deleteBarrierIfExist[3]: expected data = {}", expected);
+
+        Assertions.assertEquals(expected, actual);
+        log.info("deleteBarrierIfExist[4]: - test succeeded");
     }
 
     private void resetId(Statement statement, String dbName) {

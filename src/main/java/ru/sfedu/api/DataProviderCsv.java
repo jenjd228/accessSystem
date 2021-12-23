@@ -342,6 +342,61 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     @Override
+    public Result<Barrier> deleteBarrierById(Integer barrierId) {
+        log.info("deleteBarrierById [1] subjectId = {}",barrierId);
+        String newFilePath = barriersFilePath.substring(0, barriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
+        Result<Barrier> barrierResult = new Result<>(null, Constants.CODE_NOT_FOUND, null);
+        File oldFile = new File(barriersFilePath);
+        File newFile = new File(newFilePath);
+        try {
+            FileReader fileReader = new FileReader(barriersFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+
+            reader.readAll().stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createBarrier(Integer.parseInt(records[0]), Integer.parseInt(records[1]), Boolean.parseBoolean(records[2]));
+                    })
+                    .filter(it -> {
+                        if (it.getId().equals(barrierId)) {
+                            log.info("deleteBarrierById [2]: deleted barrier = {}", it);
+                            barrierResult.setCode(Constants.CODE_ACCESS);
+                            barrierResult.setResult(it);
+                            MongoProvider.save(CommandType.DELETED, RepositoryType.CSV, mongoDbName, it);
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    })
+                    .forEach(it -> {
+                        try {
+                            write(it, newFilePath, getAllObjectFields(it));
+                        } catch (IOException | CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
+                            log.error("deleteBarrierById [3]: error {} ", e.getMessage());
+                        }
+                    });
+
+            fileReader.close();
+            reader.close();
+
+        } catch (Exception e) {
+            log.error("deleteBarrierById [4]: error {}", e.getMessage());
+            barrierResult.setCode(Constants.CODE_ERROR);
+        }
+
+        log.info("deleteBarrierById [5] : New file {} written", newFilePath);
+
+        boolean isDeleted = oldFile.delete();
+        log.info("deleteBarrierById [6] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+
+        boolean isRenamed = newFile.renameTo(oldFile);
+        log.info("deleteBarrierById [7] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+
+        log.info("deleteBarrierById [8] : subject modification is successful");
+        return barrierResult;
+    }
+
+    @Override
     public Result<TreeMap<History, List<Motion>>> getSubjectHistoryBySubjectId(Integer subjectId) {
         Result<TreeMap<History, List<Motion>>> result = new Result<>();
         TreeMap<History, List<Motion>> listTreeMap = new TreeMap<>();

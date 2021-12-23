@@ -18,7 +18,7 @@ import static ru.sfedu.utils.TImeUtil.getUtcTimeInMillis;
 
 public class DataProviderH2 implements IDataProvider {
 
-    private final Logger log = LogManager.getLogger(DataProviderXml.class.getName());
+    private final Logger log = LogManager.getLogger(DataProviderH2.class.getName());
 
     private String h2PathFolder = "./";
     private final String mongoDbName;
@@ -252,6 +252,28 @@ public class DataProviderH2 implements IDataProvider {
             }
         } catch (Exception e) {
             log.error("deleteAccessBarrierBySubjectAndBarrierId[5]: error = {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+        }
+        return result;
+    }
+
+    @Override
+    public Result<Barrier> deleteBarrierById(Integer barrierId) {
+        log.info("deleteBarrierById[1]: barrierId = {}", barrierId);
+        Result<Barrier> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
+        try {
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_BARRIER_BY_ID,barrierId));
+            if (resultSet.next()){
+                result.setCode(Constants.CODE_ACCESS);
+                result.setResult(createBarrier(resultSet.getInt(Constants.KEY_ID),resultSet.getInt(Constants.KEY_BARRIER_FLOOR),resultSet.getBoolean(Constants.KEY_IS_OPEN)));
+                statement.executeUpdate(String.format(Constants.DELETE_BARRIER_BY_BARRIER_ID,barrierId));
+            }
+            statement.close();
+            connection.close();
+        } catch (Exception e) {
+            log.error("deleteBarrierById[5]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
         }
         return result;

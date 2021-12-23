@@ -264,6 +264,41 @@ public class DataProviderXml implements IDataProvider {
     }
 
     @Override
+    public Result<Barrier> deleteBarrierById(Integer barrierId) {
+        log.info("deleteBarrierById[1]: barrierId = {}", barrierId);
+        Result<Barrier> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
+        try {
+            Wrapper<Barrier> wrapper = readFile(barriersFilePath);
+            List<Barrier> newList = wrapper.getList().stream()
+                    .filter(it -> {
+                        if (it.getId().equals(barrierId)) {
+                            result.setCode(Constants.CODE_ACCESS);
+                            result.setResult(it);
+                            MongoProvider.save(CommandType.DELETED, RepositoryType.XML, mongoDbName, it);
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }).toList();
+            FileUtil.deleteFileOrFolderIfExists(barriersFilePath);
+            createFileIfNotExists(barriersFilePath);
+            newList.forEach(it -> {
+                try {
+                    XmlUtil.write(barriersFilePath, it);
+                } catch (Exception e) {
+                    log.error("deleteBarrierById[2]: error = {}", e.getMessage());
+                }
+            });
+        } catch (XMLStreamException e) {
+            log.info("deleteBarrierById[3]: error = {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("deleteBarrierById[4]: error = {}", e.getMessage());
+            result.setCode(Constants.CODE_ERROR);
+        }
+        return result;
+    }
+
+    @Override
     public Result<TreeMap<History, List<Motion>>> getSubjectHistoryBySubjectId(Integer subjectId) {
         Result<TreeMap<History, List<Motion>>> result = new Result<>();
         TreeMap<History, List<Motion>> listTreeMap = new TreeMap<>();
