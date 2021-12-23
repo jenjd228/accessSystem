@@ -343,7 +343,7 @@ public class DataProviderCsv implements IDataProvider {
 
     @Override
     public Result<Barrier> deleteBarrierById(Integer barrierId) {
-        log.info("deleteBarrierById [1] subjectId = {}",barrierId);
+        log.info("deleteBarrierById [1] barrierId = {}",barrierId);
         String newFilePath = barriersFilePath.substring(0, barriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         Result<Barrier> barrierResult = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         File oldFile = new File(barriersFilePath);
