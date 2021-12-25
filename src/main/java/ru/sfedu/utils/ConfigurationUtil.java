@@ -14,7 +14,7 @@ import java.util.Properties;
  */
 public class ConfigurationUtil {
 
-    private static final String DEFAULT_CONFIG_PATH = "src/main/resources/environment.properties";
+    private static final String DEFAULT_CONFIG_PATH = "environment.properties";
     private static String configPath = "";
     private static final Properties configuration = new Properties();
 
@@ -44,14 +44,17 @@ public class ConfigurationUtil {
      */
     private static void loadConfiguration() throws IOException {
         File nf;
+        InputStream in;
 
         if (configPath == null || configPath.isEmpty()) {
-            nf = new File(DEFAULT_CONFIG_PATH);
+            in = ConfigurationUtil.class.getClassLoader().getResourceAsStream(DEFAULT_CONFIG_PATH);
+            //nf = new File(DEFAULT_CONFIG_PATH);
         } else {
-            nf = new File(configPath);
+            File file = new File(configPath);
+            in = new FileInputStream(file);
+            //nf = new File(configPath);
         }
 
-        InputStream in = new FileInputStream(nf);// DEFAULT_CONFIG_PATH.getClass().getResourceAsStream(DEFAULT_CONFIG_PATH);
         try {
             configuration.load(in);
         } catch (IOException ex) {

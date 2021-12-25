@@ -7,12 +7,10 @@ import ru.sfedu.model.*;
 import ru.sfedu.utils.FileUtil;
 import ru.sfedu.utils.XmlUtil;
 
+import javax.management.modelmbean.XMLParseException;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
@@ -124,11 +122,17 @@ public class DataProviderXml implements IDataProvider {
         log.info("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
         AccessBarrier accessBarrier;
         Result<Object> result = new Result<>();
+        Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
         try {
-            accessBarrier = createAccessBarrier(getNewObjectId(accessBarriersFilePath), subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
-            Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
             if (checkResult.getCode() == Constants.CODE_ACCESS) {
-                XmlUtil.write(accessBarriersFilePath, accessBarrier);
+                List<AccessBarrier> accessBarriers = getAccessBarriersBySubjectId(subjectId);
+                Optional<AccessBarrier> optionalAccessBarrier = accessBarriers.stream().filter(it -> it.getBarrierId().equals(barrierId) && it.getSubjectId().equals(subjectId)).findFirst();
+                if (optionalAccessBarrier.isPresent()) {
+                    updateSubjectAccess(subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
+                } else {
+                    accessBarrier = createAccessBarrier(XmlUtil.getNewObjectId(accessBarriersFilePath), subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
+                    XmlUtil.write(accessBarriersFilePath, accessBarrier);
+                }
                 result.setCode(Constants.CODE_ACCESS);
             } else {
                 result.setCode(Constants.CODE_INVALID_DATA);
@@ -139,8 +143,22 @@ public class DataProviderXml implements IDataProvider {
             result.setCode(Constants.CODE_ERROR);
             return result;
         }
-        log.info("grantAccess [3]: access granted successfully = {}", accessBarrier);
+        log.info("grantAccess [3]: access granted successfully");
         return result;
+    }
+
+    private void updateSubjectAccess(Integer subjectId, Integer barrierId, Long date) {
+        log.info("updateSubjectAccess [1]: subjectId = {}", subjectId);
+        try {
+            Wrapper<AccessBarrier> wrapper = readFile(accessBarriersFilePath);
+            Optional<AccessBarrier> accessBarrier = wrapper.getList().stream().filter(it -> it.getBarrierId().equals(barrierId) && it.getSubjectId().equals(subjectId)).findFirst();
+            if (accessBarrier.isPresent()) {
+                accessBarrier.get().setDate(date);
+                XmlUtil.write(accessBarriersFilePath, accessBarrier.get());
+            }
+        } catch (Exception e) {
+            log.error("updateSubjectAccess [2]: error = {}", e.getMessage());
+        }
     }
 
     @Override
@@ -174,8 +192,10 @@ public class DataProviderXml implements IDataProvider {
             accessBarriers = wrapper.getList().stream()
                     .filter(it -> it.getSubjectId().equals(subjectId))
                     .toList();
+        } catch (XMLParseException e) {
+            log.info("getAccessBarriersBySubjectId[1]: {}", e.getMessage());
         } catch (Exception e) {
-            log.error("getAccessBarriersBySubjectId[1]: error = {}", e.getMessage());
+            log.error("getAccessBarriersBySubjectId[2]: error = {}", e.getMessage());
         }
         return accessBarriers;
     }

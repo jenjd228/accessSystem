@@ -13,10 +13,7 @@ import ru.sfedu.model.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 import static ru.sfedu.utils.CsvUtil.getNewObjectId;
@@ -128,11 +125,17 @@ public class DataProviderCsv implements IDataProvider {
         log.info("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
         AccessBarrier accessBarrier;
         Result<Object> result = new Result<>();
+        Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
         try {
-            accessBarrier = createAccessBarrier(getNewObjectId(accessBarriersFilePath), subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
-            Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
             if (checkResult.getCode() == Constants.CODE_ACCESS) {
-                write(accessBarrier, accessBarriersFilePath, getAllObjectFields(accessBarrier));
+                List<AccessBarrier> accessBarriers = getAccessBarriersBySubjectId(subjectId);
+                Optional<AccessBarrier> optionalAccessBarrier = accessBarriers.stream().filter(it -> it.getBarrierId().equals(barrierId) && it.getSubjectId().equals(subjectId)).findFirst();
+                if (optionalAccessBarrier.isPresent()) {
+                    updateSubjectAccess(subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
+                } else {
+                    accessBarrier = createAccessBarrier(getNewObjectId(accessBarriersFilePath), subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
+                    write(accessBarrier, accessBarriersFilePath, getAllObjectFields(accessBarrier));
+                }
                 result.setCode(Constants.CODE_ACCESS);
             } else {
                 result.setCode(Constants.CODE_INVALID_DATA);
@@ -143,8 +146,47 @@ public class DataProviderCsv implements IDataProvider {
             result.setCode(Constants.CODE_ERROR);
             return result;
         }
-        log.info("grantAccess [3]: access granted successfully = {}", accessBarrier);
+        log.info("grantAccess [3]: access granted successfully");
         return result;
+    }
+
+    private void updateSubjectAccess(Integer subjectId, Integer barrierId, Long date) {
+        log.info("updateSubjectAccess [1]: subject access updating subjectId = {}", subjectId);
+        String newFilePath = accessBarriersFilePath.substring(0, accessBarriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
+        File oldFile = new File(accessBarriersFilePath);
+        File newFile = new File(newFilePath);
+        try {
+            FileReader fileReader = new FileReader(accessBarriersFilePath);
+            CSVReader reader = new CSVReader(fileReader);
+
+            reader.readAll().stream()
+                    .map(it -> {
+                        String[] records = it[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
+                        return createAccessBarrier(Integer.parseInt(records[0]), Integer.parseInt(records[1]), Integer.parseInt(records[2]), Long.parseLong(records[3]));
+                    }).forEach(accessBarrier -> {
+                        if (accessBarrier.getSubjectId().equals(subjectId) && accessBarrier.getBarrierId().equals(barrierId)) {
+                            accessBarrier.setDate(date);
+                            MongoProvider.save(CommandType.UPDATED, RepositoryType.CSV, mongoDbName, accessBarrier);
+                        }
+                        try {
+                            write(accessBarrier, newFilePath, getAllObjectFields(accessBarrier));
+                        } catch (IOException | CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
+                            log.error("updateSubjectAccess [2]: error = {}", e.getMessage());
+                        }
+                    });
+        } catch (IOException | CsvException e) {
+            log.error("updateSubjectAccess [3]: error = {}", e.getMessage());
+        }
+
+        log.info("updateSubjectAccess [4]: New file {} written", newFilePath);
+
+        boolean isDeleted = oldFile.delete();
+        log.info("updateSubjectAccess [5]: Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+
+        boolean isRenamed = newFile.renameTo(oldFile);
+        log.info("updateSubjectAccess [6]: New file {}, isRenamed: {}", newFilePath, isRenamed);
+
+        log.info("updateSubjectAccess [7]: subject modification is successful");
     }
 
     @Override
@@ -343,7 +385,7 @@ public class DataProviderCsv implements IDataProvider {
 
     @Override
     public Result<Barrier> deleteBarrierById(Integer barrierId) {
-        log.info("deleteBarrierById [1] barrierId = {}",barrierId);
+        log.info("deleteBarrierById [1] barrierId = {}", barrierId);
         String newFilePath = barriersFilePath.substring(0, barriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         Result<Barrier> barrierResult = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         File oldFile = new File(barriersFilePath);

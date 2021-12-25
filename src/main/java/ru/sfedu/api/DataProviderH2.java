@@ -6,10 +6,7 @@ import ru.sfedu.Constants;
 import ru.sfedu.model.*;
 
 import java.sql.*;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 import static ru.sfedu.utils.ConfigurationUtil.getConfigurationEntry;
 import static ru.sfedu.utils.SubjectUtil.*;
@@ -47,7 +44,7 @@ public class DataProviderH2 implements IDataProvider {
             statement.close();
             connection.close();
         } catch (SQLException e) {
-            log.error("DataProviderH2 - initialization error");
+            log.error("DataProviderH2 - initialization error {}", e.getMessage());
         }
     }
 
@@ -112,26 +109,48 @@ public class DataProviderH2 implements IDataProvider {
         Result<Object> result = new Result<>();
         Connection connection = null;
         Statement statement = null;
+        Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
         try {
-            accessBarrier = createAccessBarrier(null, subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
-            Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
             if (checkResult.getCode() == Constants.CODE_ACCESS) {
-                connection = connection();
-                statement = connection.createStatement();
-                statement.executeUpdate(String.format(Constants.INSERT_ACCESS_BARRIER, accessBarrier.getSubjectId(), accessBarrier.getBarrierId(), accessBarrier.getDate()));
+                List<AccessBarrier> accessBarriers = getAccessBarriersBySubjectId(subjectId);
+                Optional<AccessBarrier> optionalAccessBarrier = accessBarriers.stream().filter(it -> it.getBarrierId().equals(barrierId) && it.getSubjectId().equals(subjectId)).findFirst();
+                if (optionalAccessBarrier.isPresent()) {
+                    updateSubjectAccess(subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
+                } else {
+                    accessBarrier = createAccessBarrier(null, subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
+                    connection = connection();
+                    statement = connection.createStatement();
+                    statement.executeUpdate(String.format(Constants.INSERT_ACCESS_BARRIER, accessBarrier.getSubjectId(), accessBarrier.getBarrierId(), accessBarrier.getDate()));
+                }
                 result.setCode(Constants.CODE_ACCESS);
             } else {
                 result.setCode(Constants.CODE_INVALID_DATA);
                 result.setResult(checkResult.getResult());
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             log.error("grantAccess [2]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
+            return result;
         } finally {
             closeStatementAndConnection(connection, statement);
         }
-        log.info("grantAccess [3]: access granted successfully = {}", accessBarrier);
+        log.info("grantAccess [3]: access granted successfully");
         return result;
+    }
+
+    private void updateSubjectAccess(Integer subjectId, Integer barrierId, Long date) {
+        log.info("updateSubjectAccess [1]: subjectId = {}", subjectId);
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            connection = connection();
+            statement = connection.createStatement();
+            statement.executeUpdate(String.format(Constants.UPDATE_ACCESS_SUBJECT_DATE_BY_SUBJECT_AND_BARRIER_ID, date, subjectId, barrierId));
+        } catch (Exception e) {
+            log.error("updateSubjectAccess [2]: error = {}", e.getMessage());
+        }finally {
+            closeStatementAndConnection(connection,statement);
+        }
     }
 
     @Override

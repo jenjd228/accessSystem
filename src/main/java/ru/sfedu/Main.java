@@ -73,7 +73,7 @@ public class Main {
             }
             if (cmd.hasOption(Constants.CLI_PRINT_SUBJECTS)) {
                 List<Subject> subjects = dataProvider.getAllSubjects();
-                printData(subjects);
+                printData("Пользователи не найдены",subjects);
             }
             if (cmd.hasOption(Constants.CLI_NEW_BARRIER)) {
                 String[] arguments = cmd.getOptionValues(Constants.CLI_NEW_BARRIER);
@@ -87,7 +87,7 @@ public class Main {
             }
             if (cmd.hasOption(Constants.CLI_PRINT_BARRIERS)) {
                 List<Barrier> barriers = dataProvider.getAllBarriers();
-                printData(barriers);
+                printData("Барьеры не найдены",barriers);
             }
             if (cmd.hasOption(Constants.CLI_GRANT_ACCESS)) {
                 String[] arguments = cmd.getOptionValues(Constants.CLI_GRANT_ACCESS);
@@ -146,13 +146,14 @@ public class Main {
         } catch (ParseException e) {
             log.error("Произошла ошибка = {}", e.getMessage());
         }
+
     }
 
     private static void analyzeDeletedBarrier(Result<Barrier> barrierResult) {
-        if (barrierResult.getCode() == Constants.CODE_ACCESS){
-            log.info("Барьер удалён = {}",barrierResult.getResult());
-        }else {
-            log.info("Произошла ошибка или барьер не найден. Статус ошибки = {}",barrierResult.getCode());
+        if (barrierResult.getCode() == Constants.CODE_ACCESS) {
+            log.info("Барьер удалён = {}", barrierResult.getResult());
+        } else {
+            log.info("Произошла ошибка или барьер не найден. Статус ошибки = {}", barrierResult.getCode());
         }
     }
 
@@ -319,18 +320,26 @@ public class Main {
         return options;
     }
 
-    private static <T> void printData(List<T> list) {
-        list.forEach(log::info);
+    private static <T> void printData(String text, List<T> list) {
+        if (list.size() == 0) {
+            log.info(text);
+        } else {
+            list.forEach(log::info);
+        }
     }
 
     private static void printAccessBarriers(List<AccessBarrier> accessBarriers) {
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        accessBarriers.forEach(it -> {
-            calendar.setTimeInMillis(it.getDate());
-            System.out.println(calendar.getTime());
-            log.info("id = {}, subjectId = {}, barrierId = {}, date = {}", it.getId(), it.getSubjectId(), it.getBarrierId(), dateFormat.format(calendar.getTime()));
-        });
+        if (accessBarriers.size() == 0){
+            log.info("Доступы не найдены");
+        }else {
+            Calendar calendar = Calendar.getInstance();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            accessBarriers.forEach(it -> {
+                calendar.setTimeInMillis(it.getDate());
+                System.out.println(calendar.getTime());
+                log.info("id = {}, subjectId = {}, barrierId = {}, date = {}", it.getId(), it.getSubjectId(), it.getBarrierId(), dateFormat.format(calendar.getTime()));
+            });
+        }
     }
 
     private static void printSubjectHistory(Result<TreeMap<History, List<Motion>>> result) {

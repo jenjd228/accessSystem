@@ -162,6 +162,7 @@ public class Constants {
     public static final String DELETE_ACCESS_BARRIERS_BY_ID = String.format("DELETE FROM %s WHERE ", SQL_TABLE_NAME_ACCESS_BARRIER).concat(KEY_ID).concat(" = %d");
     public static final String DELETE_SUBJECT_BY_ID = String.format("DELETE FROM %s WHERE ", SQL_TABLE_NAME_SUBJECT).concat(KEY_ID).concat(" = %d");
 
+    public static final String UPDATE_ACCESS_SUBJECT_DATE_BY_SUBJECT_AND_BARRIER_ID = "UPDATE ".concat(SQL_TABLE_NAME_ACCESS_BARRIER).concat(" set ").concat(KEY_DATE).concat(" = '%d' WHERE ").concat(KEY_SUBJECT_ID).concat(" = %d AND ").concat(KEY_BARRIER_ID).concat(" = %d ");
     public static final String UPDATE_BARRIER_IS_OPEN_BY_ID = "UPDATE ".concat(SQL_TABLE_NAME_BARRIER).concat(" set ").concat(KEY_IS_OPEN).concat(" = '%b' WHERE ").concat(KEY_ID).concat(" = %d");
     public static final String UPDATE_SUBJECT = "UPDATE ".concat(SQL_TABLE_NAME_SUBJECT).concat(" set ").concat(KEY_TYPE).concat(" = '%s',").concat(KEY_NAME).concat(" = '%s',").concat(KEY_PASSWORD).concat(" = '%s',").concat(KEY_LOGIN).concat(" = '%s',").concat(KEY_SURNAME).concat(" = '%s',").concat(KEY_PATRONYMIC).concat(" = '%s',").concat(KEY_EMAIL).concat(" = '%s',").concat(KEY_COLOR).concat(" = '%s',").concat(KEY_NUMBER).concat(" = '%s' WHERE ").concat(KEY_ID).concat(" = %d");
 }
