@@ -48,11 +48,9 @@ public class ConfigurationUtil {
 
         if (configPath == null || configPath.isEmpty()) {
             in = ConfigurationUtil.class.getClassLoader().getResourceAsStream(DEFAULT_CONFIG_PATH);
-            //nf = new File(DEFAULT_CONFIG_PATH);
         } else {
             File file = new File(configPath);
             in = new FileInputStream(file);
-            //nf = new File(configPath);
         }
 
         try {
