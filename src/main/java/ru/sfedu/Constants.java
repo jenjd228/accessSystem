@@ -142,6 +142,7 @@ public class Constants {
     public static final String SQL_TABLE_CREATE_MOTION = "CREATE TABLE IF NOT EXISTS ".concat(SQL_TABLE_NAME_MOTION).concat("(").concat(KEY_ID).concat(" INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,").concat(KEY_BARRIER_ID).concat(" INTEGER NOT NULL,").concat(KEY_HISTORY_ID).concat(" INTEGER NOT NULL,").concat(KEY_MOVE_TYPE).concat(" VARCHAR(20))");
     public static final String SQL_TABLE_CREATE_BARRIER = "CREATE TABLE IF NOT EXISTS ".concat(SQL_TABLE_NAME_BARRIER).concat("(").concat(KEY_ID).concat(" INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,").concat(KEY_BARRIER_FLOOR).concat(" INTEGER NOT NULL,").concat(KEY_IS_OPEN).concat(" BOOLEAN NOT NULL)");
 
+    public static final String SELECT_ACCESS_BARRIER_BY_SUBJECT_AND_BARRIER_ID = String.format("SELECT * FROM %s WHERE %s ",SQL_TABLE_NAME_ACCESS_BARRIER,KEY_SUBJECT_ID).concat(" = %d AND ").concat(KEY_BARRIER_ID).concat(" = %d ");
     public static final String SELECT_ACCESS_BARRIER_IF_HAS_PERMISSION = String.format("SELECT * FROM %s WHERE %s ", SQL_TABLE_NAME_ACCESS_BARRIER, KEY_SUBJECT_ID).concat(" = %d AND ").concat(KEY_BARRIER_ID).concat(" = %d AND ").concat(KEY_DATE).concat(" > %d");
     public static final String SELECT_ACCESS_BARRIER_BY_SUBJECT_ID = String.format("SELECT * FROM %s ", SQL_TABLE_NAME_ACCESS_BARRIER).concat(" WHERE ").concat(KEY_SUBJECT_ID).concat(" = %d");
     public static final String SELECT_ALL_FROM_SUBJECT = String.format("SELECT * FROM %s", SQL_TABLE_NAME_SUBJECT);

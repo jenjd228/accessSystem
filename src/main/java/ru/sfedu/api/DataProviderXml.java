@@ -153,6 +153,7 @@ public class DataProviderXml implements IDataProvider {
             Wrapper<AccessBarrier> wrapper = readFile(accessBarriersFilePath);
             Optional<AccessBarrier> accessBarrier = wrapper.getList().stream().filter(it -> it.getBarrierId().equals(barrierId) && it.getSubjectId().equals(subjectId)).findFirst();
             if (accessBarrier.isPresent()) {
+                MongoProvider.save(CommandType.UPDATED, RepositoryType.XML, mongoDbName, accessBarrier);
                 accessBarrier.get().setDate(date);
                 XmlUtil.write(accessBarriersFilePath, accessBarrier.get());
             }

@@ -145,11 +145,16 @@ public class DataProviderH2 implements IDataProvider {
         try {
             connection = connection();
             statement = connection.createStatement();
-            statement.executeUpdate(String.format(Constants.UPDATE_ACCESS_SUBJECT_DATE_BY_SUBJECT_AND_BARRIER_ID, date, subjectId, barrierId));
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_ACCESS_BARRIER_BY_SUBJECT_AND_BARRIER_ID, subjectId, barrierId));
+            if (resultSet.next()) {
+                AccessBarrier accessBarrier = createAccessBarrier(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_SUBJECT_ID), resultSet.getInt(Constants.KEY_BARRIER_ID), resultSet.getLong(Constants.KEY_DATE));
+                statement.executeUpdate(String.format(Constants.UPDATE_ACCESS_SUBJECT_DATE_BY_SUBJECT_AND_BARRIER_ID, date, subjectId, barrierId));
+                MongoProvider.save(CommandType.UPDATED, RepositoryType.H2, mongoDbName, accessBarrier);
+            }
         } catch (Exception e) {
             log.error("updateSubjectAccess [2]: error = {}", e.getMessage());
-        }finally {
-            closeStatementAndConnection(connection,statement);
+        } finally {
+            closeStatementAndConnection(connection, statement);
         }
     }
 
