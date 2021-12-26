@@ -108,7 +108,7 @@ public class DataProviderXml implements IDataProvider {
         Barrier barrier;
         try {
             barrier = createBarrier(getNewObjectId(barriersFilePath), barrierFloor, false);
-            XmlUtil.write(barriersFilePath, barrier);
+            XmlUtil.writeOrUpdate(barriersFilePath, barrier);
         } catch (Exception e) {
             log.error("barrierRegistration [2]: error = {}", e.getMessage());
             return false;
@@ -131,7 +131,7 @@ public class DataProviderXml implements IDataProvider {
                     updateSubjectAccess(subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
                 } else {
                     accessBarrier = createAccessBarrier(XmlUtil.getNewObjectId(accessBarriersFilePath), subjectId, barrierId, getUtcTimeInMillis(year, month, day, hours));
-                    XmlUtil.write(accessBarriersFilePath, accessBarrier);
+                    XmlUtil.writeOrUpdate(accessBarriersFilePath, accessBarrier);
                 }
                 result.setCode(Constants.CODE_ACCESS);
             } else {
@@ -155,7 +155,7 @@ public class DataProviderXml implements IDataProvider {
             if (accessBarrier.isPresent()) {
                 MongoProvider.save(CommandType.UPDATED, RepositoryType.XML, mongoDbName, accessBarrier);
                 accessBarrier.get().setDate(date);
-                XmlUtil.write(accessBarriersFilePath, accessBarrier.get());
+                XmlUtil.writeOrUpdate(accessBarriersFilePath, accessBarrier.get());
             }
         } catch (Exception e) {
             log.error("updateSubjectAccess [2]: error = {}", e.getMessage());
@@ -235,7 +235,7 @@ public class DataProviderXml implements IDataProvider {
             createFileIfNotExists(subjectsFilePath);
             newList.forEach(it -> {
                 try {
-                    XmlUtil.write(subjectsFilePath, it);
+                    XmlUtil.writeOrUpdate(subjectsFilePath, it);
                 } catch (Exception e) {
                     log.error("deleteSubjectById[2]: error = {}", e.getMessage());
                 }
@@ -270,7 +270,7 @@ public class DataProviderXml implements IDataProvider {
             createFileIfNotExists(accessBarriersFilePath);
             newList.forEach(it -> {
                 try {
-                    XmlUtil.write(accessBarriersFilePath, it);
+                    XmlUtil.writeOrUpdate(accessBarriersFilePath, it);
                 } catch (Exception e) {
                     log.error("deleteAccessBarrierBySubjectAndBarrierId[2]: error = {}", e.getMessage());
                 }
@@ -305,7 +305,7 @@ public class DataProviderXml implements IDataProvider {
             createFileIfNotExists(barriersFilePath);
             newList.forEach(it -> {
                 try {
-                    XmlUtil.write(barriersFilePath, it);
+                    XmlUtil.writeOrUpdate(barriersFilePath, it);
                 } catch (Exception e) {
                     log.error("deleteBarrierById[2]: error = {}", e.getMessage());
                 }
@@ -377,7 +377,7 @@ public class DataProviderXml implements IDataProvider {
             createFileIfNotExists(accessBarriersFilePath);
             newList.forEach(it -> {
                 try {
-                    XmlUtil.write(accessBarriersFilePath, it);
+                    XmlUtil.writeOrUpdate(accessBarriersFilePath, it);
                 } catch (Exception e) {
                     log.error("deleteAccessBarrierBySubjectId[3]: error = {}", e.getMessage());
                 }
@@ -463,7 +463,7 @@ public class DataProviderXml implements IDataProvider {
                     MongoProvider.save(CommandType.UPDATED, RepositoryType.XML, mongoDbName, it);
                     it.setOpen(flag);
                     try {
-                        XmlUtil.write(barriersFilePath, it);
+                        XmlUtil.writeOrUpdate(barriersFilePath, it);
                     } catch (Exception e) {
                         log.error("updateBarrierStatus [3]: error = {}", e.getMessage());
                     }
@@ -503,7 +503,7 @@ public class DataProviderXml implements IDataProvider {
 
         try {
             subject.setId(getNewObjectId(subjectsFilePath));
-            XmlUtil.write(subjectsFilePath, subject);
+            XmlUtil.writeOrUpdate(subjectsFilePath, subject);
         } catch (Exception ex) {
             new Result<>(ex.getMessage(), Constants.CODE_ERROR, null);
         }
@@ -515,7 +515,7 @@ public class DataProviderXml implements IDataProvider {
     private Result<Object> saveModifySubject(Subject subject) {
         log.info("saveModifyUser [1] : {}", subject);
         try {
-            XmlUtil.write(subjectsFilePath, subject);
+            XmlUtil.writeOrUpdate(subjectsFilePath, subject);
         } catch (Exception e) {
             log.error("saveModifyUser [3]: {}", e.getMessage());
             return new Result<>(e.getMessage(), Constants.CODE_ERROR, null);
@@ -556,7 +556,7 @@ public class DataProviderXml implements IDataProvider {
             Result<Integer> result = getHistoryIdForMotion(subjectId);
             if (result.getCode() == Constants.CODE_ACCESS) {
                 motion.setHistoryId(result.getResult());
-                XmlUtil.write(motionsFilePath, motion);
+                XmlUtil.writeOrUpdate(motionsFilePath, motion);
             } else {
                 log.info("motionRegistration [2]: history cannot be create");
             }
@@ -605,7 +605,7 @@ public class DataProviderXml implements IDataProvider {
         try {
             Integer newHistoryId = getNewObjectId(historyFilePath);
             History history = createHistory(subjectId, newHistoryId);
-            XmlUtil.write(historyFilePath, history);
+            XmlUtil.writeOrUpdate(historyFilePath, history);
             result.setCode(Constants.CODE_ACCESS);
             result.setResult(history);
             log.info("createAndSaveHistory [2]: history = {}", history);

@@ -26,7 +26,7 @@ public class XmlUtil {
         return wrapper;
     }
 
-    public static <T extends OnlyId> void write(String filePath, T object) throws Exception {
+    public static <T extends OnlyId> void writeOrUpdate(String filePath, T object) throws Exception {
         try {
             createFileIfNotExists(filePath);
         } catch (Exception e) {

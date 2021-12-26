@@ -73,7 +73,7 @@ public class Main {
             }
             if (cmd.hasOption(Constants.CLI_PRINT_SUBJECTS)) {
                 List<Subject> subjects = dataProvider.getAllSubjects();
-                printData("Пользователи не найдены",subjects);
+                printData("Пользователи не найдены", subjects);
             }
             if (cmd.hasOption(Constants.CLI_NEW_BARRIER)) {
                 String[] arguments = cmd.getOptionValues(Constants.CLI_NEW_BARRIER);
@@ -87,7 +87,7 @@ public class Main {
             }
             if (cmd.hasOption(Constants.CLI_PRINT_BARRIERS)) {
                 List<Barrier> barriers = dataProvider.getAllBarriers();
-                printData("Барьеры не найдены",barriers);
+                printData("Барьеры не найдены", barriers);
             }
             if (cmd.hasOption(Constants.CLI_GRANT_ACCESS)) {
                 String[] arguments = cmd.getOptionValues(Constants.CLI_GRANT_ACCESS);
@@ -143,10 +143,13 @@ public class Main {
                         System.out // куда производить вывод
                 );
             }
+        }catch (ArrayIndexOutOfBoundsException e){
+            log.info("Неверное количество аргументов");
+        }catch (NumberFormatException e) {
+            log.info("Некорректные данные");
         } catch (ParseException e) {
             log.error("Произошла ошибка = {}", e.getMessage());
         }
-
     }
 
     private static void analyzeDeletedBarrier(Result<Barrier> barrierResult) {
@@ -329,9 +332,9 @@ public class Main {
     }
 
     private static void printAccessBarriers(List<AccessBarrier> accessBarriers) {
-        if (accessBarriers.size() == 0){
+        if (accessBarriers.size() == 0) {
             log.info("Доступы не найдены");
-        }else {
+        } else {
             Calendar calendar = Calendar.getInstance();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             accessBarriers.forEach(it -> {

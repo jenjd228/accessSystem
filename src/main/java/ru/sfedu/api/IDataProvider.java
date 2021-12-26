@@ -88,11 +88,11 @@ public interface IDataProvider {
     Result<Subject> deleteSubjectById(Integer subjectId);
 
     /**
-     * Method that removes all accesses by subject and barrier id.
+     * Method that removes access barrier by subject and barrier id.
      *
      * @param subjectId - the id of a subject.
      * @param barrierId - the id of a barrier.
-     * @return the last deleted AccessBarrier.
+     * @return the deleted AccessBarrier.
      **/
     Result<AccessBarrier> deleteAccessBarrierBySubjectAndBarrierId(Integer subjectId, Integer barrierId);
 

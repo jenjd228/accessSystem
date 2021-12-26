@@ -179,8 +179,7 @@ public class DataProviderH2 implements IDataProvider {
             while (resultSet.next()) {
                 subjects.add(createSubject(resultSet));
             }
-            statement.close();
-            connection.close();
+            closeStatementAndConnection(connection, statement);
         } catch (SQLException e) {
             log.error("getAllUsers [1]: error = {}", e.getMessage());
         }
@@ -197,8 +196,7 @@ public class DataProviderH2 implements IDataProvider {
             while (resultSet.next()) {
                 accessBarriers.add(createAccessBarrier(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_SUBJECT_ID), resultSet.getInt(Constants.KEY_BARRIER_ID), resultSet.getLong(Constants.KEY_DATE)));
             }
-            statement.close();
-            connection.close();
+            closeStatementAndConnection(connection, statement);
         } catch (SQLException e) {
             log.error("getAccessBarriersBySubjectId [1]: error = {}", e.getMessage());
         }
@@ -215,8 +213,7 @@ public class DataProviderH2 implements IDataProvider {
             while (resultSet.next()) {
                 accessBarriers.add(createBarrier(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_BARRIER_FLOOR), resultSet.getBoolean(Constants.KEY_IS_OPEN)));
             }
-            statement.close();
-            connection.close();
+            closeStatementAndConnection(connection, statement);
         } catch (SQLException e) {
             log.error("getAllBarriers [1]: error = {}", e.getMessage());
         }
@@ -235,10 +232,9 @@ public class DataProviderH2 implements IDataProvider {
                 Connection connection = connection();
                 Statement statement = connection.createStatement();
                 statement.executeUpdate(String.format(Constants.DELETE_SUBJECT_BY_ID, subjectId));
-                deleteAccessBarrierBySubjectId(subjectId);
+                deleteAccessBarriersBySubjectId(subjectId);
                 MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, result.getResult());
-                statement.close();
-                connection.close();
+                closeStatementAndConnection(connection, statement);
                 log.info("deleteSubjectById [3]: subject deleted");
             }
         } catch (Exception e) {
@@ -253,29 +249,21 @@ public class DataProviderH2 implements IDataProvider {
         log.info("deleteAccessBarrierBySubjectAndBarrierId[1]: subjectId = {}", subjectId);
         Result<AccessBarrier> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         try {
-            List<AccessBarrier> accessBarriersBySubjectId = getAccessBarriersBySubjectId(subjectId);
-            List<AccessBarrier> accessBarriersBySubjectAndBarrierId = accessBarriersBySubjectId.stream()
-                    .filter(it -> it.getSubjectId().equals(subjectId) && it.getBarrierId().equals(barrierId)).toList();
-            if (!accessBarriersBySubjectAndBarrierId.isEmpty()) {
-                log.info("deleteAccessBarrierBySubjectAndBarrierId[2]: accessBarriers has found = {}", accessBarriersBySubjectAndBarrierId);
+            Connection connection = connection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_ACCESS_BARRIER_BY_SUBJECT_AND_BARRIER_ID, subjectId, barrierId));
+            if (resultSet.next()) {
+                AccessBarrier accessBarrier = createAccessBarrier(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_SUBJECT_ID), resultSet.getInt(Constants.KEY_BARRIER_ID), resultSet.getLong(Constants.KEY_DATE));
+                log.info("deleteAccessBarrierBySubjectAndBarrierId[2]: accessBarriers has found");
                 result.setCode(Constants.CODE_ACCESS);
-                result.setResult(accessBarriersBySubjectAndBarrierId.get(accessBarriersBySubjectAndBarrierId.size() - 1));
-                Connection connection = connection();
-                Statement statement = connection.createStatement();
-                accessBarriersBySubjectAndBarrierId.forEach(it -> {
-                    try {
-                        statement.executeUpdate(String.format(Constants.DELETE_ACCESS_BARRIERS_BY_ID, it.getId()));
-                        MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, it);
-                    } catch (SQLException e) {
-                        log.error("deleteAccessBarrierBySubjectAndBarrierId[3]: error = {}", e.getMessage());
-                    }
-                });
-                statement.close();
-                connection.close();
-                log.info("deleteAccessBarrierBySubjectAndBarrierId[4]: accessBarriers deleted");
+                result.setResult(accessBarrier);
+                statement.executeUpdate(String.format(Constants.DELETE_ACCESS_BARRIERS_BY_ID, accessBarrier.getId()));
+                MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, accessBarrier);
+                log.info("deleteAccessBarrierBySubjectAndBarrierId[3]: access barrier deleted");
             }
+            closeStatementAndConnection(connection, statement);
         } catch (Exception e) {
-            log.error("deleteAccessBarrierBySubjectAndBarrierId[5]: error = {}", e.getMessage());
+            log.error("deleteAccessBarrierBySubjectAndBarrierId[4]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
         }
         return result;
@@ -296,8 +284,7 @@ public class DataProviderH2 implements IDataProvider {
                 statement.executeUpdate(String.format(Constants.DELETE_BARRIER_BY_BARRIER_ID, barrierId));
                 MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, barrier);
             }
-            statement.close();
-            connection.close();
+            closeStatementAndConnection(connection, statement);
         } catch (Exception e) {
             log.error("deleteBarrierById[5]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
@@ -335,8 +322,7 @@ public class DataProviderH2 implements IDataProvider {
                     motions.add(createMotion(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_HISTORY_ID), resultSet.getInt(Constants.KEY_BARRIER_ID), MoveType.valueOf(resultSet.getString(Constants.KEY_MOVE_TYPE))));
                 }
             }
-            statement.close();
-            connection.close();
+            closeStatementAndConnection(connection, statement);
             return motions;
         } catch (SQLException e) {
             log.error("getMotionBySubjectId [2]: error = {}", e.getMessage());
@@ -356,8 +342,7 @@ public class DataProviderH2 implements IDataProvider {
                     histories.add(createHistory(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_SUBJECT_ID), resultSet.getLong(Constants.KEY_DATE)));
                 }
             }
-            statement.close();
-            connection.close();
+            closeStatementAndConnection(connection, statement);
             return histories;
         } catch (Exception e) {
             log.error("getAllSubjectHistories [2]: error = {}", e.getMessage());
@@ -365,7 +350,7 @@ public class DataProviderH2 implements IDataProvider {
         return new ArrayList<>();
     }
 
-    private void deleteAccessBarrierBySubjectId(Integer subjectId) {
+    private void deleteAccessBarriersBySubjectId(Integer subjectId) {
         log.info("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
         try {
             Connection connection = connection();
@@ -375,8 +360,7 @@ public class DataProviderH2 implements IDataProvider {
                 statement.executeUpdate(String.format(Constants.DELETE_ACCESS_BARRIERS_BY_ID, resultSet.getInt(Constants.KEY_ID)));
                 MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, createAccessBarrier(resultSet.getInt(Constants.KEY_ID), subjectId, resultSet.getInt(Constants.KEY_BARRIER_ID), resultSet.getLong(Constants.KEY_DATE)));
             }
-            statement.close();
-            connection.close();
+            closeStatementAndConnection(connection, statement);
         } catch (Exception e) {
             log.error("deleteAccessBarrierBySubjectId [4]: error {}", e.getMessage());
         }
