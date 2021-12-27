@@ -62,7 +62,7 @@ public class XmlUtil {
     }
 
     public static Integer getNewObjectId(String filepath) {
-        log.info("getNewObjectId [1]: filePath = {}", filepath);
+        log.debug("getNewObjectId [1]: filePath = {}", filepath);
         File file = new File(filepath);
         List list = new ArrayList();
         Serializer serializer = new Persister();

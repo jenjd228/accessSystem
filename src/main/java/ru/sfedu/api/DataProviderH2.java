@@ -57,7 +57,7 @@ public class DataProviderH2 implements IDataProvider {
 
     @Override
     public Result<Object> subjectRegistration(Subject subject) {
-        log.info("saveOrUpdateSubject [1]: {}", subject);
+        log.debug("saveOrUpdateSubject [1]: {}", subject);
         Result<Object> result;
 
         Result<TreeMap<String, String>> validationResult = objectValidation(subject);
@@ -70,11 +70,11 @@ public class DataProviderH2 implements IDataProvider {
         try {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
-                log.info("saveOrUpdateSubject [2]: There is the same subject {}", oldSubject);
+                log.debug("saveOrUpdateSubject [2]: There is the same subject {}", oldSubject);
                 MongoProvider.save(CommandType.UPDATED, RepositoryType.H2, mongoDbName, oldSubject.getResult());
                 result = saveModifySubject(subject);
             } else {
-                log.info("saveOrUpdateSubject [3]: There is no the same subject");
+                log.debug("saveOrUpdateSubject [3]: There is no the same subject");
                 result = writeNewSubject(subject);
             }
         } catch (Exception e) {
@@ -86,7 +86,7 @@ public class DataProviderH2 implements IDataProvider {
 
     @Override
     public boolean barrierRegistration(Integer barrierFloor) {
-        log.info("barrierRegistration [1]: barrierFloor = {}", barrierFloor);
+        log.debug("barrierRegistration [1]: barrierFloor = {}", barrierFloor);
         Barrier barrier;
         try {
             barrier = createBarrier(null, barrierFloor, false);
@@ -98,13 +98,13 @@ public class DataProviderH2 implements IDataProvider {
             log.error("barrierRegistration [2]: error = {}", e.getMessage());
             return false;
         }
-        log.info("barrierRegistration [3]: barrier created successfully = {}", barrier);
+        log.debug("barrierRegistration [3]: barrier created successfully = {}", barrier);
         return true;
     }
 
     @Override
     public Result<Object> grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours) {
-        log.info("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        log.debug("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
         AccessBarrier accessBarrier = null;
         Result<Object> result = new Result<>();
         Connection connection = null;
@@ -134,12 +134,12 @@ public class DataProviderH2 implements IDataProvider {
         } finally {
             closeStatementAndConnection(connection, statement);
         }
-        log.info("grantAccess [3]: access granted successfully");
+        log.debug("grantAccess [3]: access granted successfully");
         return result;
     }
 
     private void updateSubjectAccess(Integer subjectId, Integer barrierId, Long date) {
-        log.info("updateSubjectAccess [1]: subjectId = {}", subjectId);
+        log.debug("updateSubjectAccess [1]: subjectId = {}", subjectId);
         Connection connection = null;
         Statement statement = null;
         try {
@@ -222,12 +222,12 @@ public class DataProviderH2 implements IDataProvider {
 
     @Override
     public Result<Subject> deleteSubjectById(Integer subjectId) {
-        log.info("deleteSubjectById[1]: subjectId = {}", subjectId);
+        log.debug("deleteSubjectById[1]: subjectId = {}", subjectId);
         Result<Subject> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         try {
             Result<Subject> subjectResult = getSubjectById(subjectId);
             if (subjectResult.getCode() == Constants.CODE_ACCESS) {
-                log.info("deleteSubjectById [2]: subject has found = {}", subjectResult.getResult());
+                log.debug("deleteSubjectById [2]: subject has found = {}", subjectResult.getResult());
                 result = subjectResult;
                 Connection connection = connection();
                 Statement statement = connection.createStatement();
@@ -235,7 +235,7 @@ public class DataProviderH2 implements IDataProvider {
                 deleteAccessBarriersBySubjectId(subjectId);
                 MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, result.getResult());
                 closeStatementAndConnection(connection, statement);
-                log.info("deleteSubjectById [3]: subject deleted");
+                log.debug("deleteSubjectById [3]: subject deleted");
             }
         } catch (Exception e) {
             log.error("deleteSubjectById[4]: error = {}", e.getMessage());
@@ -246,7 +246,7 @@ public class DataProviderH2 implements IDataProvider {
 
     @Override
     public Result<AccessBarrier> deleteAccessBarrierBySubjectAndBarrierId(Integer subjectId, Integer barrierId) {
-        log.info("deleteAccessBarrierBySubjectAndBarrierId[1]: subjectId = {}", subjectId);
+        log.debug("deleteAccessBarrierBySubjectAndBarrierId[1]: subjectId = {}", subjectId);
         Result<AccessBarrier> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         try {
             Connection connection = connection();
@@ -254,12 +254,12 @@ public class DataProviderH2 implements IDataProvider {
             ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_ACCESS_BARRIER_BY_SUBJECT_AND_BARRIER_ID, subjectId, barrierId));
             if (resultSet.next()) {
                 AccessBarrier accessBarrier = createAccessBarrier(resultSet.getInt(Constants.KEY_ID), resultSet.getInt(Constants.KEY_SUBJECT_ID), resultSet.getInt(Constants.KEY_BARRIER_ID), resultSet.getLong(Constants.KEY_DATE));
-                log.info("deleteAccessBarrierBySubjectAndBarrierId[2]: accessBarriers has found");
+                log.debug("deleteAccessBarrierBySubjectAndBarrierId[2]: accessBarriers has found");
                 result.setCode(Constants.CODE_ACCESS);
                 result.setResult(accessBarrier);
                 statement.executeUpdate(String.format(Constants.DELETE_ACCESS_BARRIERS_BY_ID, accessBarrier.getId()));
                 MongoProvider.save(CommandType.DELETED, RepositoryType.H2, mongoDbName, accessBarrier);
-                log.info("deleteAccessBarrierBySubjectAndBarrierId[3]: access barrier deleted");
+                log.debug("deleteAccessBarrierBySubjectAndBarrierId[3]: access barrier deleted");
             }
             closeStatementAndConnection(connection, statement);
         } catch (Exception e) {
@@ -271,7 +271,7 @@ public class DataProviderH2 implements IDataProvider {
 
     @Override
     public Result<Barrier> deleteBarrierById(Integer barrierId) {
-        log.info("deleteBarrierById[1]: barrierId = {}", barrierId);
+        log.debug("deleteBarrierById[1]: barrierId = {}", barrierId);
         Result<Barrier> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         try {
             Connection connection = connection();
@@ -311,7 +311,7 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     private List<Motion> getMotionByHistoryId(Integer historyId) {
-        log.info("getMotionBySubjectId [1]: historyId = {}", historyId);
+        log.debug("getMotionBySubjectId [1]: historyId = {}", historyId);
         try {
             List<Motion> motions = new ArrayList<>();
             Connection connection = connection();
@@ -331,7 +331,7 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     private List<History> getAllSubjectHistories(Integer subjectId) {
-        log.info("getAllSubjectHistories [1]: subjectId = {}", subjectId);
+        log.debug("getAllSubjectHistories [1]: subjectId = {}", subjectId);
         try {
             List<History> histories = new ArrayList<>();
             Connection connection = connection();
@@ -351,7 +351,7 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     private void deleteAccessBarriersBySubjectId(Integer subjectId) {
-        log.info("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
+        log.debug("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
         try {
             Connection connection = connection();
             Statement statement = connection.createStatement();
@@ -387,16 +387,16 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     private void openOrCloseBarrier(Integer barrierId, boolean flag) {
-        log.info("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
+        log.debug("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
         try {
             Connection connection = connection();
             Statement statement = connection.createStatement();
             saveOldBarrierInMongo(barrierId);
             int rowsUpdates = statement.executeUpdate(String.format(Constants.UPDATE_BARRIER_IS_OPEN_BY_ID, flag, barrierId));
             if (rowsUpdates != 0) {
-                log.info("openOrCloseBarrier [2]: barrier has updated");
+                log.debug("openOrCloseBarrier [2]: barrier has updated");
             } else {
-                log.info("openOrCloseBarrier [2]: barrier not found");
+                log.debug("openOrCloseBarrier [2]: barrier not found");
             }
             closeStatementAndConnection(connection, statement);
         } catch (SQLException e) {
@@ -408,14 +408,14 @@ public class DataProviderH2 implements IDataProvider {
         Result<Barrier> result = getBarrierById(barrierId);
         if (result.getCode() == Constants.CODE_ACCESS) {
             MongoProvider.save(CommandType.UPDATED, RepositoryType.H2, mongoDbName, result.getResult());
-            log.info("saveOldBarrierInMongo [1]: barrier has saved");
+            log.debug("saveOldBarrierInMongo [1]: barrier has saved");
         } else {
-            log.info("saveOldBarrierInMongo [2]: barrier has no saved");
+            log.debug("saveOldBarrierInMongo [2]: barrier has no saved");
         }
     }
 
     private boolean checkPermission(Integer subjectId, Integer barrierId) {
-        log.info("checkPermission [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        log.debug("checkPermission [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
         boolean isHasAccess = false;
         try {
             Connection connection = connection();
@@ -425,10 +425,10 @@ public class DataProviderH2 implements IDataProvider {
             ResultSet resultSet = statement.executeQuery(String.format(Constants.SELECT_ACCESS_BARRIER_IF_HAS_PERMISSION, subjectId, barrierId, currentTime));
 
             if (resultSet.next()) {
-                log.info("checkPermission [3]: subject has an access");
+                log.debug("checkPermission [3]: subject has an access");
                 isHasAccess = true;
             } else {
-                log.info("checkPermission [5] subject has no an access or there is no such a barrier");
+                log.debug("checkPermission [5] subject has no an access or there is no such a barrier");
             }
             closeStatementAndConnection(connection, statement);
         } catch (Exception e) {
@@ -438,7 +438,7 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     private void motionRegistration(Integer subjectId, Integer barrierId, MoveType moveType) {
-        log.info("saveMotion [1]: subjectId = {}, barrierId = {}, moveType = {}", subjectId, barrierId, moveType);
+        log.debug("saveMotion [1]: subjectId = {}, barrierId = {}, moveType = {}", subjectId, barrierId, moveType);
         try {
             Motion motion = createMotion(barrierId, moveType);
             Result<String> result = getHistoryIdForMotion(subjectId);
@@ -449,7 +449,7 @@ public class DataProviderH2 implements IDataProvider {
                 statement.executeUpdate(String.format(Constants.INSERT_MOTION, motion.getBarrierId(), motion.getHistoryId(), motion.getMoveType()));
                 closeStatementAndConnection(connection, statement);
             } else {
-                log.info("saveMotion [2]: history cannot be create");
+                log.debug("saveMotion [2]: history cannot be create");
             }
         } catch (Exception e) {
             log.error("saveMotion [3]: {}", e.getMessage());
@@ -457,7 +457,7 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     private Result<String> getHistoryIdForMotion(Integer subjectId) {
-        log.info("getHistoryIdForMotion [1]: subjectId = {}", subjectId);
+        log.debug("getHistoryIdForMotion [1]: subjectId = {}", subjectId);
         Result<String> result = new Result<>(null, Constants.CODE_ERROR, null);
         Connection connection = null;
         Statement statement = null;
@@ -470,21 +470,21 @@ public class DataProviderH2 implements IDataProvider {
 
             if (resultSet.next()) {
                 String id = resultSet.getString(Constants.KEY_ID);
-                log.info("getHistoryIdForMotion [2] history has found historyId = {}", id);
+                log.debug("getHistoryIdForMotion [2] history has found historyId = {}", id);
                 result.setCode(Constants.CODE_ACCESS);
                 result.setResult(id);
                 closeStatementAndConnection(connection, statement);
                 return result;
             }
 
-            log.info("getHistoryIdForMotion [3]: history not found");
+            log.debug("getHistoryIdForMotion [3]: history not found");
 
             Result<History> resultHistory = createAndSaveHistory(subjectId);
             if (resultHistory.getCode() == Constants.CODE_ACCESS) {
                 result.setCode(Constants.CODE_ACCESS);
                 result.setResult(resultHistory.getResult().getId().toString());
             }
-            log.info("getHistoryIdForMotion [4]: result = {}", result);
+            log.debug("getHistoryIdForMotion [4]: result = {}", result);
         } catch (Exception e) {
             log.error("getHistoryIdForMotion [5]: {}", e.getMessage());
         } finally {
@@ -494,7 +494,7 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     private Result<Barrier> getBarrierById(Integer id) {
-        log.info("getBarrierById [1]: id = {}", id);
+        log.debug("getBarrierById [1]: id = {}", id);
         Result<Barrier> result = new Result<>();
         result.setCode(Constants.CODE_NOT_FOUND);
 
@@ -519,12 +519,12 @@ public class DataProviderH2 implements IDataProvider {
             closeStatementAndConnection(connection, statement);
         }
 
-        log.info("getBarrierById [3]: result {}", result);
+        log.debug("getBarrierById [3]: result {}", result);
         return result;
     }
 
     private Result<History> createAndSaveHistory(Integer subjectId) {
-        log.info("createAndSaveHistory [1]: subjectId = {}", subjectId);
+        log.debug("createAndSaveHistory [1]: subjectId = {}", subjectId);
         Result<History> result = new Result<>(null, Constants.CODE_ERROR, null);
         try {
             History history = createHistory(subjectId, null);
@@ -536,9 +536,9 @@ public class DataProviderH2 implements IDataProvider {
                 history.setId(Integer.parseInt(resultSet.getString(Constants.KEY_ID)));
                 result.setCode(Constants.CODE_ACCESS);
                 result.setResult(history);
-                log.info("createAndSaveHistory [2]: history = {}", history);
+                log.debug("createAndSaveHistory [2]: history = {}", history);
             } else {
-                log.info("createAndSaveHistory [3]: history not found = {}", history);
+                log.debug("createAndSaveHistory [3]: history not found = {}", history);
             }
         } catch (Exception e) {
             log.error("createAndSaveHistory [4]: {}", e.getMessage());
@@ -547,25 +547,25 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     private Result<Object> writeNewSubject(Subject subject) throws SQLException {
-        log.info("writeNewSubject [1]: New subject is writing {}", subject);
+        log.debug("writeNewSubject [1]: New subject is writing {}", subject);
 
         Connection connection = connection();
         Statement statement = connection.createStatement();
         statement.executeUpdate(createSubjectInsertString(subject));
         closeStatementAndConnection(connection, statement);
 
-        log.info("writeNewSubject [2]: new subject record is successful {}", subject);
+        log.debug("writeNewSubject [2]: new subject record is successful {}", subject);
         return new Result<>(null, Constants.CODE_ACCESS, subject);
     }
 
     private Result<Object> saveModifySubject(Subject subject) throws SQLException {
-        log.info("saveModifySubject [1] : {}", subject);
+        log.debug("saveModifySubject [1] : {}", subject);
         Connection connection = connection();
         Statement statement = connection.createStatement();
         statement.executeUpdate(createSubjectUpdateString(subject));
         closeStatementAndConnection(connection, statement);
 
-        log.info("saveModifySubject [2] : subject modification is successful");
+        log.debug("saveModifySubject [2] : subject modification is successful");
         return new Result<>(null, Constants.CODE_ACCESS, subject);
     }
 
@@ -577,10 +577,10 @@ public class DataProviderH2 implements IDataProvider {
             case ADMIN, USER -> result = createHumanUpdate(subject);
             case ANIMAL -> result = createAnimalUpdate(subject);
             case TRANSPORT -> result = createTransportUpdate(subject);
-            case UNDEFINED -> log.info("objectValidation [1]: UNDEFINED subject");
+            case UNDEFINED -> log.debug("objectValidation [1]: UNDEFINED subject");
             default -> log.error("objectValidation [2]: error there is no such SubjectType");
         }
-        log.info("createSubjectInsertString [3]: insertString = {}", result);
+        log.debug("createSubjectInsertString [3]: insertString = {}", result);
         return result;
     }
 
@@ -607,10 +607,10 @@ public class DataProviderH2 implements IDataProvider {
             case ADMIN, USER -> result = createHumanInsert(subject);
             case ANIMAL -> result = createAnimalInsert(subject);
             case TRANSPORT -> result = createTransportInsert(subject);
-            case UNDEFINED -> log.info("objectValidation [1]: UNDEFINED subject");
+            case UNDEFINED -> log.debug("objectValidation [1]: UNDEFINED subject");
             default -> log.error("objectValidation [2]: error there is no such SubjectType");
         }
-        log.info("createSubjectInsertString [3]: insertString = {}", result);
+        log.debug("createSubjectInsertString [3]: insertString = {}", result);
         return result;
     }
 
@@ -630,7 +630,7 @@ public class DataProviderH2 implements IDataProvider {
     }
 
     private Result<Subject> getSubjectById(Integer id) {
-        log.info("getSubjectById [1] : id = {}", id);
+        log.debug("getSubjectById [1] : id = {}", id);
         Result<Subject> result = new Result<>();
         result.setCode(Constants.CODE_NOT_FOUND);
 
@@ -653,7 +653,7 @@ public class DataProviderH2 implements IDataProvider {
             closeStatementAndConnection(connection, statement);
         }
 
-        log.info("getSubjectById [2] : result {}", result);
+        log.debug("getSubjectById [2] : result {}", result);
         return result;
     }
 
@@ -677,7 +677,7 @@ public class DataProviderH2 implements IDataProvider {
             case ADMIN, USER -> result = createHuman(id, subjectType, resultSet.getString(Constants.KEY_PASSWORD), resultSet.getString(Constants.KEY_LOGIN), resultSet.getString(Constants.KEY_NAME), resultSet.getString(Constants.KEY_SURNAME), resultSet.getString(Constants.KEY_PATRONYMIC), resultSet.getString(Constants.KEY_EMAIL));
             case ANIMAL -> result = createAnimal(id, resultSet.getString(Constants.KEY_NAME), resultSet.getString(Constants.KEY_COLOR));
             case TRANSPORT -> result = createTransport(id, resultSet.getString(Constants.KEY_NUMBER), resultSet.getString(Constants.KEY_COLOR));
-            case UNDEFINED -> log.info("objectValidation [1]: UNDEFINED subject");
+            case UNDEFINED -> log.debug("objectValidation [1]: UNDEFINED subject");
             default -> log.error("objectValidation [2]: error there is no such SubjectType");
         }
         return result;

@@ -13,9 +13,9 @@ public class FileUtil {
         File file = new File(filePath);
         if (!file.exists()) {
             boolean flag = file.createNewFile();
-            log.info("createFileIfNotExists [1]: New file {}, is created: {}", file.getAbsolutePath(), flag);
+            log.debug("createFileIfNotExists [1]: New file {}, is created: {}", file.getAbsolutePath(), flag);
         } else {
-            log.info("createFileIfNotExists [2]: File {} is exists", file.getAbsolutePath());
+            log.debug("createFileIfNotExists [2]: File {} is exists", file.getAbsolutePath());
         }
     }
 
@@ -23,9 +23,9 @@ public class FileUtil {
         File file = new File(folderPath);
         if (!file.exists()) {
             boolean flag = file.mkdirs();
-            log.info("createFolderIfNotExists [1]: New folder {}, is created: {}", file.getAbsolutePath(), flag);
+            log.debug("createFolderIfNotExists [1]: New folder {}, is created: {}", file.getAbsolutePath(), flag);
         } else {
-            log.info("createFolderIfNotExists [2]: Folder {} is exists", file.getAbsolutePath());
+            log.debug("createFolderIfNotExists [2]: Folder {} is exists", file.getAbsolutePath());
         }
     }
 
@@ -33,9 +33,9 @@ public class FileUtil {
         File file = new File(folderPath);
         if (file.exists()) {
             boolean flag = file.delete();
-            log.info("deleteFileOrFolderIfExists [1]: Folder of file {}, is deleted: {}", file.getAbsolutePath(), flag);
+            log.debug("deleteFileOrFolderIfExists [1]: Folder of file {}, is deleted: {}", file.getAbsolutePath(), flag);
         } else {
-            log.info("deleteFileOrFolderIfExists [2]: Folder or file {} is not exists", file.getAbsolutePath());
+            log.debug("deleteFileOrFolderIfExists [2]: Folder or file {} is not exists", file.getAbsolutePath());
         }
     }
 

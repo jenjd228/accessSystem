@@ -75,7 +75,7 @@ public class DataProviderXml implements IDataProvider {
 
     @Override
     public Result<Object> subjectRegistration(Subject subject) {
-        log.info("saveOrUpdateSubject [1]: {}", subject);
+        log.debug("saveOrUpdateSubject [1]: {}", subject);
         Result<Object> result;
 
         Result<TreeMap<String, String>> validationResult = objectValidation(subject);
@@ -88,11 +88,11 @@ public class DataProviderXml implements IDataProvider {
         try {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
-                log.info("saveOrUpdateSubject [2]: There is the same subject {}", oldSubject);
+                log.debug("saveOrUpdateSubject [2]: There is the same subject {}", oldSubject);
                 MongoProvider.save(CommandType.UPDATED, RepositoryType.XML, mongoDbName, oldSubject.getResult());
                 result = saveModifySubject(subject);
             } else {
-                log.info("saveOrUpdateSubject [3]: There is no the same subject");
+                log.debug("saveOrUpdateSubject [3]: There is no the same subject");
                 result = writeNewSubject(subject);
             }
         } catch (Exception e) {
@@ -104,7 +104,7 @@ public class DataProviderXml implements IDataProvider {
 
     @Override
     public boolean barrierRegistration(Integer barrierFloor) {
-        log.info("barrierRegistration [1]: barrierFloor = {}", barrierFloor);
+        log.debug("barrierRegistration [1]: barrierFloor = {}", barrierFloor);
         Barrier barrier;
         try {
             barrier = createBarrier(getNewObjectId(barriersFilePath), barrierFloor, false);
@@ -113,13 +113,13 @@ public class DataProviderXml implements IDataProvider {
             log.error("barrierRegistration [2]: error = {}", e.getMessage());
             return false;
         }
-        log.info("barrierRegistration [3]: barrier created successfully = {}", barrier);
+        log.debug("barrierRegistration [3]: barrier created successfully = {}", barrier);
         return true;
     }
 
     @Override
     public Result<Object> grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours) {
-        log.info("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        log.debug("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
         AccessBarrier accessBarrier;
         Result<Object> result = new Result<>();
         Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
@@ -143,12 +143,12 @@ public class DataProviderXml implements IDataProvider {
             result.setCode(Constants.CODE_ERROR);
             return result;
         }
-        log.info("grantAccess [3]: access granted successfully");
+        log.debug("grantAccess [3]: access granted successfully");
         return result;
     }
 
     private void updateSubjectAccess(Integer subjectId, Integer barrierId, Long date) {
-        log.info("updateSubjectAccess [1]: subjectId = {}", subjectId);
+        log.debug("updateSubjectAccess [1]: subjectId = {}", subjectId);
         try {
             Wrapper<AccessBarrier> wrapper = readFile(accessBarriersFilePath);
             Optional<AccessBarrier> accessBarrier = wrapper.getList().stream().filter(it -> it.getBarrierId().equals(barrierId) && it.getSubjectId().equals(subjectId)).findFirst();
@@ -194,7 +194,7 @@ public class DataProviderXml implements IDataProvider {
                     .filter(it -> it.getSubjectId().equals(subjectId))
                     .toList();
         } catch (XMLParseException e) {
-            log.info("getAccessBarriersBySubjectId[1]: {}", e.getMessage());
+            log.debug("getAccessBarriersBySubjectId[1]: {}", e.getMessage());
         } catch (Exception e) {
             log.error("getAccessBarriersBySubjectId[2]: error = {}", e.getMessage());
         }
@@ -215,7 +215,7 @@ public class DataProviderXml implements IDataProvider {
 
     @Override
     public Result<Subject> deleteSubjectById(Integer subjectId) {
-        log.info("deleteSubjectById[1]: subjectId = {}", subjectId);
+        log.debug("deleteSubjectById[1]: subjectId = {}", subjectId);
         Result<Subject> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         try {
             Wrapper<Subject> wrapper = readFile(subjectsFilePath);
@@ -241,7 +241,7 @@ public class DataProviderXml implements IDataProvider {
                 }
             });
         } catch (XMLStreamException e) {
-            log.info("deleteSubjectById[3]: error = {}", e.getMessage());
+            log.debug("deleteSubjectById[3]: error = {}", e.getMessage());
         } catch (Exception e) {
             log.error("deleteSubjectById[4]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
@@ -251,7 +251,7 @@ public class DataProviderXml implements IDataProvider {
 
     @Override
     public Result<AccessBarrier> deleteAccessBarrierBySubjectAndBarrierId(Integer subjectId, Integer barrierId) {
-        log.info("deleteAccessBarrierBySubjectAndBarrierId[1]: subjectId = {}", subjectId);
+        log.debug("deleteAccessBarrierBySubjectAndBarrierId[1]: subjectId = {}", subjectId);
         Result<AccessBarrier> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         try {
             Wrapper<AccessBarrier> wrapper = readFile(accessBarriersFilePath);
@@ -276,7 +276,7 @@ public class DataProviderXml implements IDataProvider {
                 }
             });
         } catch (XMLStreamException e) {
-            log.info("deleteAccessBarrierBySubjectAndBarrierId[3]: error = {}", e.getMessage());
+            log.debug("deleteAccessBarrierBySubjectAndBarrierId[3]: error = {}", e.getMessage());
         } catch (Exception e) {
             log.error("deleteAccessBarrierBySubjectAndBarrierId[4]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
@@ -286,7 +286,7 @@ public class DataProviderXml implements IDataProvider {
 
     @Override
     public Result<Barrier> deleteBarrierById(Integer barrierId) {
-        log.info("deleteBarrierById[1]: barrierId = {}", barrierId);
+        log.debug("deleteBarrierById[1]: barrierId = {}", barrierId);
         Result<Barrier> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         try {
             Wrapper<Barrier> wrapper = readFile(barriersFilePath);
@@ -311,7 +311,7 @@ public class DataProviderXml implements IDataProvider {
                 }
             });
         } catch (XMLStreamException e) {
-            log.info("deleteBarrierById[3]: error = {}", e.getMessage());
+            log.debug("deleteBarrierById[3]: error = {}", e.getMessage());
         } catch (Exception e) {
             log.error("deleteBarrierById[4]: error = {}", e.getMessage());
             result.setCode(Constants.CODE_ERROR);
@@ -338,7 +338,7 @@ public class DataProviderXml implements IDataProvider {
     }
 
     private List<Motion> getMotionByHistoryId(Integer historyId) {
-        log.info("getMotionBySubjectId [1]: historyId = {}", historyId);
+        log.debug("getMotionBySubjectId [1]: historyId = {}", historyId);
         try {
             Wrapper<Motion> wrapper = readFile(motionsFilePath);
             return wrapper.getList().stream().filter(it -> it.getHistoryId().equals(historyId)).toList();
@@ -349,7 +349,7 @@ public class DataProviderXml implements IDataProvider {
     }
 
     private List<History> getAllSubjectHistories(Integer subjectId) {
-        log.info("getAllSubjectHistories [1]: subjectId = {}", subjectId);
+        log.debug("getAllSubjectHistories [1]: subjectId = {}", subjectId);
         try {
             Wrapper<History> wrapper = readFile(historyFilePath);
             return wrapper.getList().stream().filter(it -> it.getSubjectId().equals(subjectId)).toList();
@@ -360,7 +360,7 @@ public class DataProviderXml implements IDataProvider {
     }
 
     private void deleteAccessBarrierBySubjectId(Integer subjectId) {
-        log.info("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
+        log.debug("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
         try {
             Wrapper<AccessBarrier> wrapper = readFile(accessBarriersFilePath);
             List<AccessBarrier> newList = wrapper.getList().stream()
@@ -368,7 +368,7 @@ public class DataProviderXml implements IDataProvider {
                         if (!it.getSubjectId().equals(subjectId)) {
                             return true;
                         } else {
-                            log.info("deleteAccessBarrierBySubjectId [2]: deleted barrier = {}", it);
+                            log.debug("deleteAccessBarrierBySubjectId [2]: deleted barrier = {}", it);
                             MongoProvider.save(CommandType.DELETED, RepositoryType.XML, mongoDbName, it);
                             return false;
                         }
@@ -388,7 +388,7 @@ public class DataProviderXml implements IDataProvider {
     }
 
     private boolean openOrCloseBarrier(Integer barrierId, boolean flag) {
-        log.info("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
+        log.debug("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
         AtomicBoolean isAccess = new AtomicBoolean(false);
         try {
             Wrapper<Barrier> wrapper = readFile(barriersFilePath);
@@ -396,7 +396,7 @@ public class DataProviderXml implements IDataProvider {
             wrapper.getList().stream().filter(it -> it.getId().equals(barrierId))
                     .findFirst()
                     .ifPresent(it -> {
-                        log.info("openOrCloseBarrier [2]: barrier has found");
+                        log.debug("openOrCloseBarrier [2]: barrier has found");
                         try {
                             updateBarrierStatus(barrierId, flag);
                         } catch (Exception e) {
@@ -431,7 +431,7 @@ public class DataProviderXml implements IDataProvider {
     }
 
     private Result<Barrier> getBarrierById(Integer barrierId) {
-        log.info("getBarrierById [1]: id = {}", barrierId);
+        log.debug("getBarrierById [1]: id = {}", barrierId);
         Result<Barrier> result = new Result<>();
         result.setCode(Constants.CODE_NOT_FOUND);
 
@@ -449,17 +449,17 @@ public class DataProviderXml implements IDataProvider {
             result.setMessage(e.getMessage());
         }
 
-        log.info("getBarrierById [3]: result {}", result);
+        log.debug("getBarrierById [3]: result {}", result);
         return result;
     }
 
     private void updateBarrierStatus(Integer barrierId, boolean flag) throws Exception {
-        log.info("updateBarrierStatus [1] : {}, isOpen = {}", barrierId, flag);
+        log.debug("updateBarrierStatus [1] : {}, isOpen = {}", barrierId, flag);
         Wrapper<Barrier> wrapper = readFile(barriersFilePath);
         wrapper.getList().stream().filter(it -> it.getId().equals(barrierId))
                 .findFirst()
                 .ifPresent(it -> {
-                    log.info("updateBarrierStatus [2]: barrier has found");
+                    log.debug("updateBarrierStatus [2]: barrier has found");
                     MongoProvider.save(CommandType.UPDATED, RepositoryType.XML, mongoDbName, it);
                     it.setOpen(flag);
                     try {
@@ -468,11 +468,11 @@ public class DataProviderXml implements IDataProvider {
                         log.error("updateBarrierStatus [3]: error = {}", e.getMessage());
                     }
                 });
-        log.info("updateBarrierStatus [6] : barrier modification is successful");
+        log.debug("updateBarrierStatus [6] : barrier modification is successful");
     }
 
     private Result<Subject> getSubjectById(Integer id) {
-        log.info("getSubjectById [1] : id = {}", id);
+        log.debug("getSubjectById [1] : id = {}", id);
         Result<Subject> result = new Result<>();
         result.setCode(Constants.CODE_NOT_FOUND);
 
@@ -485,7 +485,7 @@ public class DataProviderXml implements IDataProvider {
                         result.setCode(Constants.CODE_ACCESS);
                     });
         } catch (XMLStreamException e) {
-            log.info("getSubjectById: {}", e.getMessage());
+            log.debug("getSubjectById: {}", e.getMessage());
             result.setMessage(e.getMessage());
             result.setCode(Constants.CODE_ERROR);
         } catch (Exception e) {
@@ -494,12 +494,12 @@ public class DataProviderXml implements IDataProvider {
             result.setCode(Constants.CODE_ERROR);
         }
 
-        log.info("getSubjectById [2] : result {}", result);
+        log.debug("getSubjectById [2] : result {}", result);
         return result;
     }
 
     private Result<Object> writeNewSubject(Subject subject) {
-        log.info("writeNewSubject [1] : New subject is creating");
+        log.debug("writeNewSubject [1] : New subject is creating");
 
         try {
             subject.setId(getNewObjectId(subjectsFilePath));
@@ -508,12 +508,12 @@ public class DataProviderXml implements IDataProvider {
             new Result<>(ex.getMessage(), Constants.CODE_ERROR, null);
         }
 
-        log.info("writeNewSubject [3] : New subject has written {}", subject);
+        log.debug("writeNewSubject [3] : New subject has written {}", subject);
         return new Result<>(null, Constants.CODE_ACCESS, subject);
     }
 
     private Result<Object> saveModifySubject(Subject subject) {
-        log.info("saveModifyUser [1] : {}", subject);
+        log.debug("saveModifyUser [1] : {}", subject);
         try {
             XmlUtil.writeOrUpdate(subjectsFilePath, subject);
         } catch (Exception e) {
@@ -521,12 +521,12 @@ public class DataProviderXml implements IDataProvider {
             return new Result<>(e.getMessage(), Constants.CODE_ERROR, null);
         }
 
-        log.info("saveModifyUser [4]: subject modification is successful");
+        log.debug("saveModifyUser [4]: subject modification is successful");
         return new Result<>(null, Constants.CODE_ACCESS, subject);
     }
 
     private boolean checkPermission(Integer subjectId, Integer barrierId) {
-        log.info("checkPermission [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        log.debug("checkPermission [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
         AtomicBoolean isHasAccess = new AtomicBoolean(false);
         try {
 
@@ -536,20 +536,20 @@ public class DataProviderXml implements IDataProvider {
             wrapper.getList().stream().filter(it -> it.getSubjectId().equals(subjectId) && it.getBarrierId().equals(barrierId) && it.getDate() > currentTime)
                     .findFirst()
                     .ifPresent(it -> {
-                        log.info("checkPermission [3]: subject has an access");
+                        log.debug("checkPermission [3]: subject has an access");
                         isHasAccess.set(true);
                     });
         } catch (Exception e) {
             log.error("checkPermission [4]: {}", e.getMessage());
         }
         if (!isHasAccess.get()) {
-            log.info("checkPermission [5] subject has no an access or there is no such a barrier");
+            log.debug("checkPermission [5] subject has no an access or there is no such a barrier");
         }
         return isHasAccess.get();
     }
 
     private void motionRegistration(Integer subjectId, Integer barrierId, MoveType moveType) {
-        log.info("motionRegistration [1]: subjectId = {}, barrierId = {}, moveType = {}", subjectId, barrierId, moveType);
+        log.debug("motionRegistration [1]: subjectId = {}, barrierId = {}, moveType = {}", subjectId, barrierId, moveType);
         try {
             Motion motion = createMotion(barrierId, moveType);
             motion.setId(getNewObjectId(motionsFilePath));
@@ -558,7 +558,7 @@ public class DataProviderXml implements IDataProvider {
                 motion.setHistoryId(result.getResult());
                 XmlUtil.writeOrUpdate(motionsFilePath, motion);
             } else {
-                log.info("motionRegistration [2]: history cannot be create");
+                log.debug("motionRegistration [2]: history cannot be create");
             }
         } catch (Exception e) {
             log.error("motionRegistration [3]: {}", e.getMessage());
@@ -566,7 +566,7 @@ public class DataProviderXml implements IDataProvider {
     }
 
     private Result<Integer> getHistoryIdForMotion(Integer subjectId) {
-        log.info("getHistoryIdForMotion [1]: subjectId = {}", subjectId);
+        log.debug("getHistoryIdForMotion [1]: subjectId = {}", subjectId);
         Result<Integer> result = new Result<>(null, Constants.CODE_ERROR, null);
         try {
             try {
@@ -576,7 +576,7 @@ public class DataProviderXml implements IDataProvider {
                 wrapper.getList().stream().filter(it -> it.getSubjectId().equals(subjectId) && it.getDate().equals(currentUtcTime))
                         .findFirst()
                         .ifPresent(it -> {
-                            log.info("getHistoryIdForMotion [2] history has found historyId = {}", it.getId());
+                            log.debug("getHistoryIdForMotion [2] history has found historyId = {}", it.getId());
                             result.setCode(Constants.CODE_ACCESS);
                             result.setResult(it.getId());
                         });
@@ -592,7 +592,7 @@ public class DataProviderXml implements IDataProvider {
                 result.setCode(Constants.CODE_ACCESS);
                 result.setResult(resultHistory.getResult().getId());
             }
-            log.info("getHistoryIdForMotion [4]: result = {}", result);
+            log.debug("getHistoryIdForMotion [4]: result = {}", result);
         } catch (Exception e) {
             log.error("getHistoryIdForMotion [5]: error {}", e.getMessage());
         }
@@ -600,7 +600,7 @@ public class DataProviderXml implements IDataProvider {
     }
 
     private Result<History> createAndSaveHistory(Integer subjectId) {
-        log.info("createAndSaveHistory [1]: subjectId = {}", subjectId);
+        log.debug("createAndSaveHistory [1]: subjectId = {}", subjectId);
         Result<History> result = new Result<>(null, Constants.CODE_ERROR, null);
         try {
             Integer newHistoryId = getNewObjectId(historyFilePath);
@@ -608,7 +608,7 @@ public class DataProviderXml implements IDataProvider {
             XmlUtil.writeOrUpdate(historyFilePath, history);
             result.setCode(Constants.CODE_ACCESS);
             result.setResult(history);
-            log.info("createAndSaveHistory [2]: history = {}", history);
+            log.debug("createAndSaveHistory [2]: history = {}", history);
         } catch (Exception e) {
             log.error("createAndSaveHistory [3]: {}", e.getMessage());
         }

@@ -78,7 +78,7 @@ public class DataProviderCsv implements IDataProvider {
 
     @Override
     public Result<Object> subjectRegistration(Subject subject) {
-        log.info("saveSubject [1]: {}", subject);
+        log.debug("saveSubject [1]: {}", subject);
 
         Result<TreeMap<String, String>> validationResult = objectValidation(subject);
         Result<Subject> saveResult = new Result<>(null, Constants.CODE_ERROR, subject);
@@ -91,11 +91,11 @@ public class DataProviderCsv implements IDataProvider {
         try {
             Result<Subject> oldSubject = getSubjectById(subject.getId());
             if (oldSubject.getCode() == Constants.CODE_ACCESS) {
-                log.info("saveSubject [2]: There is the same subject {}", oldSubject);
+                log.debug("saveSubject [2]: There is the same subject {}", oldSubject);
                 MongoProvider.save(CommandType.UPDATED, RepositoryType.CSV, mongoDbName, oldSubject.getResult());
                 result = saveModifySubject(subject);
             } else {
-                log.info("saveSubject [3]: There is no the same subject");
+                log.debug("saveSubject [3]: There is no the same subject");
                 result = writeNewSubject(subject);
             }
         } catch (Exception e) {
@@ -107,7 +107,7 @@ public class DataProviderCsv implements IDataProvider {
 
     @Override
     public boolean barrierRegistration(Integer barrierFloor) {
-        log.info("barrierRegistration [1]: barrierFloor = {}", barrierFloor);
+        log.debug("barrierRegistration [1]: barrierFloor = {}", barrierFloor);
         Barrier barrier;
         try {
             barrier = createBarrier(getNewObjectId(barriersFilePath), barrierFloor, false);
@@ -116,13 +116,13 @@ public class DataProviderCsv implements IDataProvider {
             log.error("barrierRegistration [2]: error = {}", e.getMessage());
             return false;
         }
-        log.info("barrierRegistration [3]: barrier created successfully = {}", barrier);
+        log.debug("barrierRegistration [3]: barrier created successfully = {}", barrier);
         return true;
     }
 
     @Override
     public Result<Object> grantAccess(Integer subjectId, Integer barrierId, Integer year, Integer month, Integer day, Integer hours) {
-        log.info("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        log.debug("grantAccess [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
         AccessBarrier accessBarrier;
         Result<Object> result = new Result<>();
         Result<TreeMap<String, String>> checkResult = checkForExistenceSubjectAndBarrier(subjectId, barrierId);
@@ -146,12 +146,12 @@ public class DataProviderCsv implements IDataProvider {
             result.setCode(Constants.CODE_ERROR);
             return result;
         }
-        log.info("grantAccess [3]: access granted successfully");
+        log.debug("grantAccess [3]: access granted successfully");
         return result;
     }
 
     private void updateSubjectAccess(Integer subjectId, Integer barrierId, Long date) {
-        log.info("updateSubjectAccess [1]: subject access updating subjectId = {}", subjectId);
+        log.debug("updateSubjectAccess [1]: subject access updating subjectId = {}", subjectId);
         String newFilePath = accessBarriersFilePath.substring(0, accessBarriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         File oldFile = new File(accessBarriersFilePath);
         File newFile = new File(newFilePath);
@@ -178,15 +178,15 @@ public class DataProviderCsv implements IDataProvider {
             log.error("updateSubjectAccess [3]: error = {}", e.getMessage());
         }
 
-        log.info("updateSubjectAccess [4]: New file {} written", newFilePath);
+        log.debug("updateSubjectAccess [4]: New file {} written", newFilePath);
 
         boolean isDeleted = oldFile.delete();
-        log.info("updateSubjectAccess [5]: Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+        log.debug("updateSubjectAccess [5]: Old file {} has deleted: {}", oldFile.getName(), isDeleted);
 
         boolean isRenamed = newFile.renameTo(oldFile);
-        log.info("updateSubjectAccess [6]: New file {}, isRenamed: {}", newFilePath, isRenamed);
+        log.debug("updateSubjectAccess [6]: New file {}, isRenamed: {}", newFilePath, isRenamed);
 
-        log.info("updateSubjectAccess [7]: subject modification is successful");
+        log.debug("updateSubjectAccess [7]: subject modification is successful");
     }
 
     @Override
@@ -225,7 +225,7 @@ public class DataProviderCsv implements IDataProvider {
 
     @Override
     public List<AccessBarrier> getAccessBarriersBySubjectId(Integer subjectId) {
-        log.info("getAccessBarriersBySubjectId [1]: subjectId = {}", subjectId);
+        log.debug("getAccessBarriersBySubjectId [1]: subjectId = {}", subjectId);
         List<AccessBarrier> accessBarriers = new ArrayList<>();
         try {
             FileReader fileReader = new FileReader(accessBarriersFilePath);
@@ -275,7 +275,7 @@ public class DataProviderCsv implements IDataProvider {
 
     @Override
     public Result<Subject> deleteSubjectById(Integer subjectId) {
-        log.info("deleteSubjectById [1]: subjectId = {}", subjectId);
+        log.debug("deleteSubjectById [1]: subjectId = {}", subjectId);
         Result<Subject> result = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         String newFilePath = subjectsFilePath.substring(0, subjectsFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         File oldFile = new File(subjectsFilePath);
@@ -317,21 +317,21 @@ public class DataProviderCsv implements IDataProvider {
             result.setMessage(e.getMessage());
         }
 
-        log.info("saveModifySubject [4] : New file {} written", newFilePath);
+        log.debug("saveModifySubject [4] : New file {} written", newFilePath);
 
         boolean isDeleted = oldFile.delete();
-        log.info("saveModifySubject [5] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+        log.debug("saveModifySubject [5] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
 
         boolean isRenamed = newFile.renameTo(oldFile);
-        log.info("saveModifySubject [6] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+        log.debug("saveModifySubject [6] : New file {}, isRenamed: {}", newFilePath, isRenamed);
 
-        log.info("saveModifySubject [7] : subject modification is successful");
+        log.debug("saveModifySubject [7] : subject modification is successful");
         return result;
     }
 
     @Override
     public Result<AccessBarrier> deleteAccessBarrierBySubjectAndBarrierId(Integer subjectId, Integer barrierId) {
-        log.info("deleteAccessBarrierBySubjectAndBarrierId [1]: subjectId = {},barrierId = {}", subjectId, barrierId);
+        log.debug("deleteAccessBarrierBySubjectAndBarrierId [1]: subjectId = {},barrierId = {}", subjectId, barrierId);
         String newFilePath = accessBarriersFilePath.substring(0, accessBarriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         Result<AccessBarrier> accessBarrierResult = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         File oldFile = new File(accessBarriersFilePath);
@@ -347,7 +347,7 @@ public class DataProviderCsv implements IDataProvider {
                     })
                     .filter(it -> {
                         if (it.getSubjectId().equals(subjectId) && it.getBarrierId().equals(barrierId)) {
-                            log.info("deleteAccessBarrierBySubjectAndBarrierId [2]: deleted barrier = {}", it);
+                            log.debug("deleteAccessBarrierBySubjectAndBarrierId [2]: deleted barrier = {}", it);
                             accessBarrierResult.setCode(Constants.CODE_ACCESS);
                             accessBarrierResult.setResult(it);
                             MongoProvider.save(CommandType.DELETED, RepositoryType.CSV, mongoDbName, it);
@@ -371,21 +371,21 @@ public class DataProviderCsv implements IDataProvider {
             log.error("deleteAccessBarrierBySubjectAndBarrierId [4]: error {}", e.getMessage());
         }
 
-        log.info("deleteAccessBarrierBySubjectAndBarrierId [5] : New file {} written", newFilePath);
+        log.debug("deleteAccessBarrierBySubjectAndBarrierId [5] : New file {} written", newFilePath);
 
         boolean isDeleted = oldFile.delete();
-        log.info("deleteAccessBarrierBySubjectAndBarrierId [6] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+        log.debug("deleteAccessBarrierBySubjectAndBarrierId [6] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
 
         boolean isRenamed = newFile.renameTo(oldFile);
-        log.info("deleteAccessBarrierBySubjectAndBarrierId [7] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+        log.debug("deleteAccessBarrierBySubjectAndBarrierId [7] : New file {}, isRenamed: {}", newFilePath, isRenamed);
 
-        log.info("deleteAccessBarrierBySubjectAndBarrierId [8] : subject modification is successful");
+        log.debug("deleteAccessBarrierBySubjectAndBarrierId [8] : subject modification is successful");
         return accessBarrierResult;
     }
 
     @Override
     public Result<Barrier> deleteBarrierById(Integer barrierId) {
-        log.info("deleteBarrierById [1] barrierId = {}", barrierId);
+        log.debug("deleteBarrierById [1] barrierId = {}", barrierId);
         String newFilePath = barriersFilePath.substring(0, barriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         Result<Barrier> barrierResult = new Result<>(null, Constants.CODE_NOT_FOUND, null);
         File oldFile = new File(barriersFilePath);
@@ -401,7 +401,7 @@ public class DataProviderCsv implements IDataProvider {
                     })
                     .filter(it -> {
                         if (it.getId().equals(barrierId)) {
-                            log.info("deleteBarrierById [2]: deleted barrier = {}", it);
+                            log.debug("deleteBarrierById [2]: deleted barrier = {}", it);
                             barrierResult.setCode(Constants.CODE_ACCESS);
                             barrierResult.setResult(it);
                             MongoProvider.save(CommandType.DELETED, RepositoryType.CSV, mongoDbName, it);
@@ -426,15 +426,15 @@ public class DataProviderCsv implements IDataProvider {
             barrierResult.setCode(Constants.CODE_ERROR);
         }
 
-        log.info("deleteBarrierById [5] : New file {} written", newFilePath);
+        log.debug("deleteBarrierById [5] : New file {} written", newFilePath);
 
         boolean isDeleted = oldFile.delete();
-        log.info("deleteBarrierById [6] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+        log.debug("deleteBarrierById [6] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
 
         boolean isRenamed = newFile.renameTo(oldFile);
-        log.info("deleteBarrierById [7] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+        log.debug("deleteBarrierById [7] : New file {}, isRenamed: {}", newFilePath, isRenamed);
 
-        log.info("deleteBarrierById [8] : subject modification is successful");
+        log.debug("deleteBarrierById [8] : subject modification is successful");
         return barrierResult;
     }
 
@@ -457,7 +457,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     private List<Motion> getMotionByHistoryId(Integer historyId) {
-        log.info("getMotionBySubjectId [1]: historyId = {}", historyId);
+        log.debug("getMotionBySubjectId [1]: historyId = {}", historyId);
         try {
             FileReader fileReader = new FileReader(motionsFilePath);
             CSVReader reader = new CSVReader(fileReader);
@@ -475,7 +475,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     private List<History> getAllSubjectHistories(Integer subjectId) {
-        log.info("getAllSubjectHistories [1]: subjectId = {}", subjectId);
+        log.debug("getAllSubjectHistories [1]: subjectId = {}", subjectId);
         try {
             FileReader fileReader = new FileReader(historyFilePath);
             CSVReader reader = new CSVReader(fileReader);
@@ -493,7 +493,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     private void deleteAccessBarriersBySubjectId(Integer subjectId) {
-        log.info("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
+        log.debug("deleteAccessBarrierBySubjectId [1]: subjectId = {}", subjectId);
         String newFilePath = accessBarriersFilePath.substring(0, accessBarriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         File oldFile = new File(accessBarriersFilePath);
         File newFile = new File(newFilePath);
@@ -510,7 +510,7 @@ public class DataProviderCsv implements IDataProvider {
                         if (!it.getSubjectId().equals(subjectId)) {
                             return true;
                         } else {
-                            log.info("deleteAccessBarrierBySubjectId [2]: deleted barrier = {}", it);
+                            log.debug("deleteAccessBarrierBySubjectId [2]: deleted barrier = {}", it);
                             MongoProvider.save(CommandType.DELETED, RepositoryType.CSV, mongoDbName, it);
                             return false;
                         }
@@ -530,15 +530,15 @@ public class DataProviderCsv implements IDataProvider {
             log.error("deleteAccessBarrierBySubjectId [4]: error {}", e.getMessage());
         }
 
-        log.info("deleteAccessBarrierBySubjectId [5] : New file {} written", newFilePath);
+        log.debug("deleteAccessBarrierBySubjectId [5] : New file {} written", newFilePath);
 
         boolean isDeleted = oldFile.delete();
-        log.info("deleteAccessBarrierBySubjectId [6] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+        log.debug("deleteAccessBarrierBySubjectId [6] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
 
         boolean isRenamed = newFile.renameTo(oldFile);
-        log.info("deleteAccessBarrierBySubjectId [7] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+        log.debug("deleteAccessBarrierBySubjectId [7] : New file {}, isRenamed: {}", newFilePath, isRenamed);
 
-        log.info("deleteAccessBarrierBySubjectId [8] : subject modification is successful");
+        log.debug("deleteAccessBarrierBySubjectId [8] : subject modification is successful");
     }
 
     private Result<TreeMap<String, String>> checkForExistenceSubjectAndBarrier(Integer subjectId, Integer barrierId) {
@@ -562,7 +562,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     private Result<Subject> getSubjectById(Integer id) {
-        log.info("getSubjectById [1]: id = {}", id);
+        log.debug("getSubjectById [1]: id = {}", id);
         Result<Subject> result = new Result<>();
         result.setCode(Constants.CODE_NOT_FOUND);
 
@@ -588,12 +588,12 @@ public class DataProviderCsv implements IDataProvider {
             result.setMessage(e.getMessage());
         }
 
-        log.info("getSubjectById [3]: result {}", result);
+        log.debug("getSubjectById [3]: result {}", result);
         return result;
     }
 
     private Result<Barrier> getBarrierById(Integer id) {
-        log.info("getBarrierById [1]: id = {}", id);
+        log.debug("getBarrierById [1]: id = {}", id);
         Result<Barrier> result = new Result<>();
         result.setCode(Constants.CODE_NOT_FOUND);
 
@@ -619,23 +619,23 @@ public class DataProviderCsv implements IDataProvider {
             result.setMessage(e.getMessage());
         }
 
-        log.info("getBarrierById [3]: result {}", result);
+        log.debug("getBarrierById [3]: result {}", result);
         return result;
     }
 
     private Result<Object> writeNewSubject(Subject subject) throws IOException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException, CsvValidationException {
-        log.info("writeNewSubject [1]: New subject is writing {}", subject);
+        log.debug("writeNewSubject [1]: New subject is writing {}", subject);
 
         subject.setId(getNewObjectId(subjectsFilePath));
 
         write(subject, subjectsFilePath, getAllSubjectFields(subject));
 
-        log.info("writeNewSubject [2]: new subject record is successful {}", subject);
+        log.debug("writeNewSubject [2]: new subject record is successful {}", subject);
         return new Result<>(null, Constants.CODE_ACCESS, subject);
     }
 
     private Result<Object> saveModifySubject(Subject subject) throws CsvValidationException, IOException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException {
-        log.info("saveModifySubject [1] : {}", subject);
+        log.debug("saveModifySubject [1] : {}", subject);
         String newFilePath = subjectsFilePath.substring(0, subjectsFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         File oldFile = new File(subjectsFilePath);
         File newFile = new File(newFilePath);
@@ -648,7 +648,7 @@ public class DataProviderCsv implements IDataProvider {
         while ((records = reader.readNext()) != null) {
             String[] subStrings = records[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
             if (subStrings[0].contains(subId)) {
-                log.info("saveModifySubject [2]: subject has found");
+                log.debug("saveModifySubject [2]: subject has found");
                 write(subject, newFilePath, getAllSubjectFields(subject));
             } else {
                 write(createSubject(subStrings), newFilePath, getAllSubjectFields(subject));
@@ -657,20 +657,20 @@ public class DataProviderCsv implements IDataProvider {
         fileReader.close();
         reader.close();
 
-        log.info("saveModifySubject [3] : New file {} written", newFilePath);
+        log.debug("saveModifySubject [3] : New file {} written", newFilePath);
 
         boolean isDeleted = oldFile.delete();
-        log.info("saveModifySubject [4] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+        log.debug("saveModifySubject [4] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
 
         boolean isRenamed = newFile.renameTo(oldFile);
-        log.info("saveModifySubject [5] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+        log.debug("saveModifySubject [5] : New file {}, isRenamed: {}", newFilePath, isRenamed);
 
-        log.info("saveModifySubject [6] : subject modification is successful");
+        log.debug("saveModifySubject [6] : subject modification is successful");
         return new Result<>(null, Constants.CODE_ACCESS, subject);
     }
 
     private boolean checkPermission(Integer subjectId, Integer barrierId) {
-        log.info("checkPermission [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
+        log.debug("checkPermission [1]: subjectId = {}, barrierId = {}", subjectId, barrierId);
         boolean isHasAccess = false;
         try {
             FileReader fileReader = new FileReader(accessBarriersFilePath);
@@ -679,10 +679,10 @@ public class DataProviderCsv implements IDataProvider {
             for (String[] nextLine : reader) {
                 String[] records = nextLine[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
                 Long currentTime = getCurrentUtcTimeInMillis();
-                log.info("checkPermission [2]: currentTime = {}, date = {}", currentTime, records[3]);
+                log.debug("checkPermission [2]: currentTime = {}, date = {}", currentTime, records[3]);
                 if (records[1].equals(String.valueOf(subjectId)) && records[2].equals(String.valueOf(barrierId))
                         && Long.parseLong(records[3]) > currentTime) {
-                    log.info("checkPermission [3]: subject has an access");
+                    log.debug("checkPermission [3]: subject has an access");
                     isHasAccess = true;
                     break;
                 }
@@ -694,13 +694,13 @@ public class DataProviderCsv implements IDataProvider {
             log.error("checkPermission [4]: error {}", e.getMessage());
         }
         if (!isHasAccess) {
-            log.info("checkPermission [5] subject has no an access or there is no such a barrier");
+            log.debug("checkPermission [5] subject has no an access or there is no such a barrier");
         }
         return isHasAccess;
     }
 
     private void motionRegistration(Integer subjectId, Integer barrierId, MoveType moveType) {
-        log.info("saveMotion [1]: subjectId = {}, barrierId = {}, moveType = {}", subjectId, barrierId, moveType);
+        log.debug("saveMotion [1]: subjectId = {}, barrierId = {}, moveType = {}", subjectId, barrierId, moveType);
         try {
             Motion motion = createMotion(barrierId, moveType);
             motion.setId(getNewObjectId(motionsFilePath));
@@ -709,7 +709,7 @@ public class DataProviderCsv implements IDataProvider {
                 motion.setHistoryId(Integer.parseInt(result.getResult()));
                 write(motion, motionsFilePath, getAllObjectFields(motion));
             } else {
-                log.info("saveMotion [2]: history cannot be create");
+                log.debug("saveMotion [2]: history cannot be create");
             }
         } catch (Exception e) {
             log.error("saveMotion [3]: error {}", e.getMessage());
@@ -717,7 +717,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     private Result<History> createAndSaveHistory(Integer subjectId) {
-        log.info("createAndSaveHistory [1]: subjectId = {}", subjectId);
+        log.debug("createAndSaveHistory [1]: subjectId = {}", subjectId);
         Result<History> result = new Result<>(null, Constants.CODE_ERROR, null);
         try {
             Integer newHistoryId = getNewObjectId(historyFilePath);
@@ -725,7 +725,7 @@ public class DataProviderCsv implements IDataProvider {
             write(history, historyFilePath, getAllObjectFields(history));
             result.setCode(Constants.CODE_ACCESS);
             result.setResult(history);
-            log.info("createAndSaveHistory [2]: history = {}", history);
+            log.debug("createAndSaveHistory [2]: history = {}", history);
         } catch (Exception e) {
             log.error("createAndSaveHistory [3]: {}", e.getMessage());
         }
@@ -733,7 +733,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     private void openOrCloseBarrier(Integer barrierId, boolean flag) {
-        log.info("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
+        log.debug("openOrCloseBarrier [1]: barrierId = {}, isOpen = {}", barrierId, flag);
         try {
             FileReader fileReader = new FileReader(barriersFilePath);
             CSVReader reader = new CSVReader(fileReader);
@@ -741,7 +741,7 @@ public class DataProviderCsv implements IDataProvider {
             for (String[] nextLine : reader) {
                 String[] records = nextLine[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
                 if (records[0].equals(String.valueOf(barrierId))) {
-                    log.info("openOrCloseBarrier [2]: barrier has found");
+                    log.debug("openOrCloseBarrier [2]: barrier has found");
                     updateBarrierStatus(barrierId, flag);
                 }
             }
@@ -751,7 +751,7 @@ public class DataProviderCsv implements IDataProvider {
     }
 
     private void updateBarrierStatus(Integer barrierId, boolean flag) throws IOException, CsvValidationException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException {
-        log.info("updateBarrierStatus [1] : {}, isOpen = {}", barrierId, flag);
+        log.debug("updateBarrierStatus [1] : {}, isOpen = {}", barrierId, flag);
         String newFilePath = barriersFilePath.substring(0, barriersFilePath.lastIndexOf(".")).concat("new").concat(Constants.CSV_FILE_TYPE);
         File oldFile = new File(barriersFilePath);
         File newFile = new File(newFilePath);
@@ -766,7 +766,7 @@ public class DataProviderCsv implements IDataProvider {
             String[] barStrings = strings[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
             barrier = createBarrier(Integer.valueOf(barStrings[0]), Integer.valueOf(barStrings[1]), false);
             if (barStrings[0].contains(records)) {
-                log.info("updateBarrierStatus [2]: barrier has found");
+                log.debug("updateBarrierStatus [2]: barrier has found");
                 MongoProvider.save(CommandType.UPDATED, RepositoryType.CSV, mongoDbName, barrier);
                 barrier.setOpen(flag);
             } else {
@@ -775,21 +775,21 @@ public class DataProviderCsv implements IDataProvider {
             write(barrier, newFilePath, getAllObjectFields(barrier));
         }
 
-        log.info("updateBarrierStatus [3] : New file {} written", newFilePath);
+        log.debug("updateBarrierStatus [3] : New file {} written", newFilePath);
 
         boolean isDeleted = oldFile.delete();
-        log.info("updateBarrierStatus [4] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
+        log.debug("updateBarrierStatus [4] : Old file {} has deleted: {}", oldFile.getName(), isDeleted);
 
         boolean isRenamed = newFile.renameTo(oldFile);
-        log.info("updateBarrierStatus [5] : New file {}, isRenamed: {}", newFilePath, isRenamed);
+        log.debug("updateBarrierStatus [5] : New file {}, isRenamed: {}", newFilePath, isRenamed);
 
         reader.close();
 
-        log.info("updateBarrierStatus [6] : barrier modification is successful");
+        log.debug("updateBarrierStatus [6] : barrier modification is successful");
     }
 
     private Result<String> getHistoryIdForMotion(Integer subjectId) {
-        log.info("getHistoryIdForMotion [1]: subjectId = {}", subjectId);
+        log.debug("getHistoryIdForMotion [1]: subjectId = {}", subjectId);
         Result<String> result = new Result<>(null, Constants.CODE_ERROR, null);
         try {
             FileReader fileReader = new FileReader(historyFilePath);
@@ -800,21 +800,21 @@ public class DataProviderCsv implements IDataProvider {
             for (String[] nextLine : reader) {
                 String[] strings = nextLine[0].split(String.valueOf(Constants.CSV_DEFAULT_SEPARATOR));
                 if (strings[1].equals(String.valueOf(subjectId)) && strings[2].equals(currentUtcTime)) {
-                    log.info("getHistoryIdForMotion [2] history has found historyId = {}", strings[0]);
+                    log.debug("getHistoryIdForMotion [2] history has found historyId = {}", strings[0]);
                     result.setCode(Constants.CODE_ACCESS);
                     result.setResult(strings[0]);
                     return result;
                 }
             }
 
-            log.info("getHistoryIdForMotion [3]: history not found");
+            log.debug("getHistoryIdForMotion [3]: history not found");
 
             Result<History> resultHistory = createAndSaveHistory(subjectId);
             if (resultHistory.getCode() == Constants.CODE_ACCESS) {
                 result.setCode(Constants.CODE_ACCESS);
                 result.setResult(resultHistory.getResult().getId().toString());
             }
-            log.info("getHistoryIdForMotion [4]: result = {}", result);
+            log.debug("getHistoryIdForMotion [4]: result = {}", result);
         } catch (Exception e) {
             log.error("getHistoryIdForMotion [5]: error {}", e.getMessage());
         }
@@ -830,7 +830,7 @@ public class DataProviderCsv implements IDataProvider {
             case ADMIN, USER -> result = createHuman(id, subjectType, records[2], records[3], records[4], records[5], records[6], records[7]);
             case ANIMAL -> result = createAnimal(id, records[2], records[3]);
             case TRANSPORT -> result = createTransport(id, records[2], records[3]);
-            case UNDEFINED -> log.info("objectValidation [1]: UNDEFINED subject");
+            case UNDEFINED -> log.debug("objectValidation [1]: UNDEFINED subject");
             default -> log.error("objectValidation [2]: error there is no such SubjectType");
         }
         return result;

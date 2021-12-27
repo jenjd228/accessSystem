@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration status="INFO">
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout
@@ -19,8 +19,10 @@
 
     <Loggers>
         <Root level="info" additivity="false"/>
-        <Logger name="ru.sfedu" level="INFO">
+        <Logger name="ru.sfedu.Main" level="INFO">
             <AppenderRef ref="console"/>
+        </Logger>
+        <Logger name="ru.sfedu" level="DEBUG">
             <AppenderRef ref="RollingFile"/>
         </Logger>
     </Loggers>

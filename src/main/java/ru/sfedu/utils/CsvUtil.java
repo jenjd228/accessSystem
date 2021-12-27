@@ -48,7 +48,7 @@ public class CsvUtil {
     }
 
     public static Integer getNewObjectId(String filePath) throws IOException, CsvValidationException {
-        log.info("getNewSubjectId [1]");
+        log.debug("getNewSubjectId [1]");
         String[] line, last = null;
         File file = new File(filePath);
         if (file.exists()) {

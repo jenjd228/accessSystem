@@ -25,7 +25,7 @@ public class MongoProvider {
     private static final Logger log = LogManager.getLogger(MongoProvider.class.getName());
 
     public static <T> void save(CommandType command, RepositoryType repositoryType, String bdName, T obj) {
-        log.info("save [1]: command = {}, type = {}, object = {}, dbName = {}", command, repositoryType, obj, bdName);
+        log.debug("save [1]: command = {}, type = {}, object = {}, dbName = {}", command, repositoryType, obj, bdName);
         try {
             MongoCollection<Document> collection = getCollection(obj.getClass(), bdName);
             ObjectMapper objectMapper = new ObjectMapper();

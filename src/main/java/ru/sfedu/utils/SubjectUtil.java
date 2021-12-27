@@ -50,21 +50,21 @@ public class SubjectUtil {
     }
 
     public static Result<TreeMap<String, String>> objectValidation(Subject subject) {
-        log.info("objectValidation [1]");
+        log.debug("objectValidation [1]");
         SubjectType eSubjectType = subject.getType();
         Result<TreeMap<String, String>> result = new Result<>(null, Constants.CODE_ERROR, null);
         switch (eSubjectType) {
             case ADMIN, USER -> result = humanValidation((Human) subject);
             case ANIMAL -> result = animalValidation((Animal) subject);
             case TRANSPORT -> result = transportValidation((Transport) subject);
-            case UNDEFINED -> log.info("objectValidation [2]: UNDEFINED subject");
-            default -> log.error("objectValidation [3]: error there is no such SubjectType");
+            case UNDEFINED -> log.debug("objectValidation [2]: UNDEFINED subject");
+            default -> log.debug("objectValidation [3]: error there is no such SubjectType");
         }
         return result;
     }
 
     private static Result<TreeMap<String, String>> transportValidation(Transport transport) {
-        log.info("transportValidation [1]: object: {}", transport);
+        log.debug("transportValidation [1]: object: {}", transport);
         TreeMap<String, String> errors = new TreeMap<>();
         Result<TreeMap<String, String>> result = new Result<>(null, Constants.CODE_ACCESS, errors);
 
@@ -80,12 +80,12 @@ public class SubjectUtil {
             result.setCode(Constants.CODE_INVALID_DATA);
         }
 
-        log.info("transportValidation [2]: isValid: {}", errors.size() == 0);
+        log.debug("transportValidation [2]: isValid: {}", errors.size() == 0);
         return result;
     }
 
     private static Result<TreeMap<String, String>> humanValidation(Human human) {
-        log.info("humanValidation [1]: object: {}", human);
+        log.debug("humanValidation [1]: object: {}", human);
         TreeMap<String, String> errors = new TreeMap<>();
         Result<TreeMap<String, String>> result = new Result<>(null, Constants.CODE_ACCESS, errors);
 
