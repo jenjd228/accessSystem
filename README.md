@@ -29,7 +29,7 @@ Options
    
 -na <name_ color_> -                                           Создание нового пользователя (животное)
    
--nb <floor> -                                                  Регистрация барьера
+-nb <floor_> -                                                 Регистрация барьера
    
 -nh <right_ name surname patronymic login password email> -    Создание нового пользователя (человек)
    
