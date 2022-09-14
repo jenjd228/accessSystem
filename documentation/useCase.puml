@@ -1,0 +1,40 @@
+@startuml
+(barrierRegistration) as br
+(printAccessBarriersBySubjectId) as pabbsi
+(printSubjectHistoryBySubjectId) as pshbsi
+(deleteAcessBarrierBySubjectAndBarrierId) as dabbsabi
+(deleteBarrierById) as dbbi
+
+left to right direction
+Admin -down-> (gateAction)
+Camera -down-> (gateAction)
+System -down-> (subjectRegistration)
+Admin -down-> (grantAccess)
+Admin -down-> (br)
+Admin -down-> (deleteSubjectById)
+Admin -down-> (pabbsi)
+Admin -down-> (pshbsi)
+Admin -down-> (dabbsabi)
+Admin -down-> (dbbi)
+Admin -down-> (printAllSubjects)
+Admin -down-> (printAllBarriers)
+Admin -down-> (subjectRegistration)
+
+(motionRegistration) .up.> (gateAction) : "<include>"
+(checkPermission) .up.> (gateAction) : "<include>"
+(openOrCloseBarrier) <.up. (gateAction) : "<extend>"
+(transportRegistration) -right-> (subjectRegistration)
+(userRegistration) -right-> (subjectRegistration)
+(animalRegistration) -right-> (subjectRegistration)
+(checkForExistenceSubjectAndBarrier) .up.> (grantAccess) : "<include>"
+(subjectValidation) .up.> (subjectRegistration) : "<include>"
+(userValidation) --> (subjectValidation)
+(animalValidation) --> (subjectValidation)
+(transportValidation) --> (subjectValidation)
+
+note right of (deleteSubjectById) : Удаление пользователя по id.
+note right of (subjectRegistration)
+Регистрация
+объекта
+end note
+@enduml

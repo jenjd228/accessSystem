@@ -44,3 +44,8 @@ Options
 -psa <subject_id> -                                            Вывод информации о правах данного пользователя
 
 -- HELP --
+
+![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/class.png)
+![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/activity.png)
+![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/useCase.png)
+![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/component.png)

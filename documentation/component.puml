@@ -1,0 +1,40 @@
+@startuml
+package "Cli api" {
+  left to right direction
+  [IDataProvider] --( interfaceCsv
+  interfaceCsv -- [DataProviderCsv]
+  [IDataProvider] --( interfaceXml
+  interfaceXml -- [DataProviderXml]
+  [IDataProvider] --( interfaceH2
+  interfaceH2 -- [DataProviderH2]
+
+  [ConfigurationUtil]
+  [SubjectUtil]
+  [TimeUtil]
+  [FileUtil]
+  [CsvUtil]
+  [XmlUtil]
+
+  [BaseTest] --( interfaceCsvTest
+  interfaceCsvTest -- [DataProviderCsvTest]
+  [BaseTest] --( interfaceXmlTest
+  interfaceXmlTest -- [DataProviderXmlTest]
+  [BaseTest] --( interfaceH2Test
+  interfaceH2Test -- [DataProviderH2Test]
+
+  [Log4j2.xml]
+  [MongoApi]
+}
+
+[MongoApi] -- [Mongo-driver v. 3.12.10]
+[Log4j2.xml] -- [Log4j2 v. 2.16.0]
+
+[DataProviderH2] -- [H2 v. 2.0.202]
+[DataProviderXml] -- [Simple-XML v. 2.7.1]
+[DataProviderCsv] -- [OpenCsv v. 5.5.2]
+
+[DataProviderCsvTest] -- [JUnit-Jupiter v 5.8.2]
+[DataProviderXmlTest] -- [JUnit-Jupiter v 5.8.2]
+[DataProviderH2Test] -- [JUnit-Jupiter v 5.8.2]
+
+@enduml

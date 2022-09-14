@@ -1,0 +1,17 @@
+@startuml
+start
+:print subject history by subject id;
+:get all subject historyes;
+:get motions for all historyes;
+if () then (list.size == 0)
+  :set code 404;
+else (list.size > 0)
+  :set code 200, set result;
+endif
+if () then (code 200)
+  :print history;
+else (code 404 or 500)
+  :print error message;
+endif
+stop
+@enduml

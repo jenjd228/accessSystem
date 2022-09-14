@@ -1,0 +1,68 @@
+@startuml
+class Subject {
+	type : ObjectType
+	accessibleBarriers : AccessBarrier
+	history : History
+}
+class Animal {
+	name : String
+	color : String
+}
+class Transport {
+	number : String
+	color : String
+}
+class Human {
+	password : String
+	login : String
+	name : String
+	surname : String
+	patronymic : String
+	email : String
+}
+class History {
+	motion : Motion
+	date : Long
+}
+class Motion {
+	barrierId : Long
+	moveType : MoveType
+}
+class AccessBarrier {
+	barrier : Barrier
+	date : Long
+}
+class Barrier {
+	barrierFloor : Long
+	barrierId : Long
+}
+enum MoveType {
+	IN
+	OUT
+}
+enum ObjectType {
+	TRANSPORT
+	USER
+	ADMIN
+	UNDEFINED
+	ANIMAL
+}
+
+Animal -right-^ Subject
+Transport -down-^ Subject
+Human -left-^ Subject
+History "*" -up-* "1" Subject : "-history"
+Motion "*" -up-* "1" History : "-motion"
+MoveType -left-* Motion : "-moveType"
+ObjectType -up-* Subject : "-type"
+AccessBarrier "*" -up-* "1" Subject : "-accessibleBarrier"
+Barrier "1" -up-* "1" AccessBarrier : "-barrier"
+
+note right of History
+Объект хранящий
+историю всех
+посещений
+end note
+
+note top of Animal : Один из вариантов \n объекта
+@enduml
