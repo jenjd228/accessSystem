@@ -45,6 +45,14 @@ Options
 
 -- HELP --
 
+| Имя диаграммы           |  Тип диаграммы  |
+|-------------------------|:---------------:|
+| Диаграмма активностей   |    activity     |
+| Диаграмма классов       | [class](#class) |
+| Диаграмма компонентов   |    component    |
+| Диаграмма использования |     useCase     |
+
+<a name="class"></a>
 ![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/class.png)
 ![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/activity.png)
 ![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/useCase.png)
