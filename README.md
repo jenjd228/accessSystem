@@ -52,10 +52,19 @@ Options
 | Диаграмма компонентов   | [component](#component) |
 | Диаграмма использования |   [useCase](#useCase)   |
 
+# Диаграммы
+## Диаграмма классов
 <a name="class">![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/class.png)</a>
+[Uml код диаграммы](../blob/master/documentation/class.puml)
 
+## Диаграмма активностей
 <a name="activity">![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/activity.png)</a>
+[Uml код диаграммы](../blob/master/documentation/activity.puml)
 
+## Диаграмма использования
 <a name="useCase">![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/useCase.png)</a>
+[Uml код диаграммы](../blob/master/documentation/useCase.puml)
 
+## Диаграмма компонентов
 <a name="component">![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/component.png)</a>
+[Uml код диаграммы](../blob/master/documentation/component.puml)
