@@ -45,15 +45,21 @@ Options
 
 -- HELP --
 
-| Имя диаграммы           |  Тип диаграммы  |
-|-------------------------|:---------------:|
-| Диаграмма активностей   |    activity     |
-| Диаграмма классов       | [class](#class) |
-| Диаграмма компонентов   |    component    |
-| Диаграмма использования |     useCase     |
+| Имя диаграммы           |      Тип диаграммы      |
+|-------------------------|:-----------------------:|
+| Диаграмма активностей   |  [activity](#activity)  |
+| Диаграмма классов       |     [class](#class)     |
+| Диаграмма компонентов   | [component](#component) |
+| Диаграмма использования |   [useCase](#useCase)   |
 
 <a name="class"></a>
 ![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/class.png)
+
+<a name="activity"></a>
 ![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/activity.png)
+
+<a name="useCase"></a>
 ![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/useCase.png)
+
+<a name="component"></a>
 ![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/component.png)
