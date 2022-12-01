@@ -52,14 +52,10 @@ Options
 | Диаграмма компонентов   | [component](#component) |
 | Диаграмма использования |   [useCase](#useCase)   |
 
-<a name="class"></a>
-![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/class.png)
+<a name="class">![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/class.png)</a>
 
-<a name="activity"></a>
-![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/activity.png)
+<a name="activity">![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/activity.png)</a>
 
-<a name="useCase"></a>
-![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/useCase.png)
+<a name="useCase">![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/useCase.png)</a>
 
-<a name="component"></a>
-![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/component.png)
+<a name="component">![Image alt](https://github.com/jenjd228/accessSystem/raw/master/documentation/component.png)</a>
